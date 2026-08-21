@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trabajos independientes — Pintura, impermeabilización y más</title>
+<meta name="description" content="Pintura, resane de grietas, impermeabilización, mosquiteros y mantenimiento general. Presupuesto sin costo. Contáctame por WhatsApp." />
+
+<!-- ============================================================= -->
+<!--  CONFIGURA TUS DATOS AQUÍ  (busca "CONFIG" también en el JS)   -->
+<!--  Cambia el nombre, ciudad, teléfono y correo por los tuyos.    -->
+<!-- ============================================================= -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#e9e7e1;
+  --surface:#f5f3ee;
+  --surface-2:#efece5;
+  --ink:#16171b;
+  --muted:#5c5e66;
+  --line:#c9c5bc;
+  --accent:#182bc4;
+  --accent-ink:#ffffff;
+  --eco:#1f7a4d;
+  --shadow:0 1px 0 rgba(0,0,0,.04), 0 18px 40px -24px rgba(20,22,40,.45);
+  --mesh:rgba(22,23,27,.10);
+  --radius:4px;
+  --maxw:1180px;
+}
+[data-theme="dark"]{
+  --bg:#131418;
+  --surface:#1b1d23;
+  --surface-2:#20232a;
+  --ink:#eceae3;
+  --muted:#9a9ca4;
+  --line:#2d303a;
+  --accent:#4a5cff;
+  --accent-ink:#ffffff;
+  --eco:#3ec77f;
+  --shadow:0 1px 0 rgba(255,255,255,.02), 0 24px 50px -28px rgba(0,0,0,.7);
+  --mesh:rgba(236,234,227,.09);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:17px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:background .5s ease,color .5s ease;
+}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+.mono{font-family:"IBM Plex Mono",monospace;font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+.eyebrow{color:var(--accent)}
+
+/* ---------- focus / a11y ---------- */
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:50;
+  background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  transition:background .5s ease,border-color .5s ease;
+}
+.nav{display:flex;align-items:center;justify-content:space-between;height:66px}
+.brand{display:flex;align-items:center;gap:11px;font-family:"Archivo",sans-serif;font-weight:900;font-size:16px;letter-spacing:-.01em}
+.logo{width:30px;height:30px;border:2px solid var(--ink);border-radius:3px;position:relative;flex:0 0 auto;overflow:hidden}
+.logo::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(var(--ink) 1.4px,transparent 1.4px),linear-gradient(90deg,var(--ink) 1.4px,transparent 1.4px);
+  background-size:6px 6px;opacity:.5}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:14px;color:var(--muted);transition:color .2s}
+.nav-links a:hover{color:var(--ink)}
+.nav-tools{display:flex;gap:10px;align-items:center}
+.iconbtn{
+  width:40px;height:40px;border:1px solid var(--line);background:var(--surface);
+  border-radius:var(--radius);color:var(--ink);cursor:pointer;display:grid;place-items:center;
+  transition:background .25s,border-color .25s,transform .15s;
+}
+.iconbtn:hover{border-color:var(--ink)}
+.iconbtn:active{transform:scale(.94)}
+.iconbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.eco-btn{width:auto;padding:0 14px;gap:8px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.eco-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .25s,box-shadow .25s}
+body.eco .eco-btn{border-color:var(--eco);color:var(--eco)}
+body.eco .eco-btn .dot{background:var(--eco);box-shadow:0 0 0 3px color-mix(in srgb,var(--eco) 25%,transparent)}
+.menu-toggle{display:none}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding:96px 0 74px;overflow:hidden}
+.hero-mesh{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(var(--mesh) 1px,transparent 1px),linear-gradient(90deg,var(--mesh) 1px,transparent 1px);
+  background-size:15px 15px;
+  -webkit-mask-image:radial-gradient(120% 90% at 78% 12%,#000 0%,transparent 62%);
+  mask-image:radial-gradient(120% 90% at 78% 12%,#000 0%,transparent 62%);
+  animation:drift 22s linear infinite;
+}
+@keyframes drift{to{background-position:15px 15px}}
+.hero .wrap{position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:24px}
+.hero-eyebrow .tick{width:26px;height:1px;background:var(--accent)}
+h1{
+  font-family:"Archivo",sans-serif;font-weight:900;
+  font-size:clamp(2.6rem,8.5vw,6rem);line-height:.96;letter-spacing:-.03em;
+  max-width:14ch;
+}
+h1 .paint{color:var(--accent);position:relative;white-space:nowrap}
+.hero-sub{margin:28px 0 36px;max-width:52ch;font-size:clamp(1rem,2.4vw,1.22rem);color:var(--muted)}
+.hero-sub strong{color:var(--ink);font-weight:600}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn{
+  font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:15px;
+  padding:14px 26px;border-radius:var(--radius);border:1px solid var(--ink);
+  cursor:pointer;display:inline-flex;align-items:center;gap:9px;
+  transition:transform .18s ease,background .25s,color .25s,border-color .25s;
+}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:var(--ink)}
+.btn-ghost:hover{background:var(--ink);color:var(--bg);transform:translateY(-2px)}
+
+/* animated reveal for hero lines */
+.reveal-line{display:block;overflow:hidden}
+.reveal-line > span{display:block;transform:translateY(110%);transition:transform .9s cubic-bezier(.16,1,.3,1)}
+.loaded .reveal-line > span{transform:translateY(0)}
+.loaded .reveal-line:nth-child(2) > span{transition-delay:.08s}
+.loaded .reveal-line:nth-child(3) > span{transition-delay:.16s}
+.fade-up{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.loaded .hero-sub.fade-up{opacity:1;transform:none;transition-delay:.4s}
+.loaded .cta-row.fade-up{opacity:1;transform:none;transition-delay:.52s}
+
+/* ---------- marquee ---------- */
+.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--surface-2);transition:background .5s}
+.marquee-track{display:flex;gap:0;width:max-content;animation:scroll 34s linear infinite}
+.marquee-track span{font-family:"Archivo",sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em;padding:16px 30px;color:var(--muted);display:flex;align-items:center;gap:30px;white-space:nowrap}
+.marquee-track span::after{content:"";width:7px;height:7px;background:var(--accent);border-radius:50%}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* ---------- section frame ---------- */
+section{padding:96px 0}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:52px;flex-wrap:wrap}
+.sec-head h2{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(1.9rem,4.5vw,3rem);letter-spacing:-.02em;line-height:1.02;max-width:16ch}
+.sec-head p{color:var(--muted);max-width:34ch}
+
+/* scroll reveal utility */
+.obs{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1)}
+.obs.in{opacity:1;transform:none}
+
+/* ---------- services ---------- */
+.services{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.svc{position:relative;background:var(--surface);padding:34px 30px 38px;min-height:230px;display:flex;flex-direction:column;overflow:hidden;transition:transform .25s}
+.svc::after{content:"";position:absolute;left:0;right:0;bottom:0;top:0;background:var(--accent);transform:translateY(101%);transition:transform .5s cubic-bezier(.16,1,.3,1);z-index:0}
+.svc:hover::after{transform:translateY(0)}
+.svc > *{position:relative;z-index:1;transition:color .35s}
+.svc:hover, .svc:focus-within{color:var(--accent-ink)}
+.svc:hover .svc-num,.svc:hover .svc-desc{color:color-mix(in srgb,var(--accent-ink) 82%,transparent)}
+.svc-num{color:var(--muted);margin-bottom:auto}
+.svc-ico{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin:14px 0 16px}
+.svc h3{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.32rem;letter-spacing:-.01em;margin-bottom:9px}
+.svc-desc{color:var(--muted);font-size:.95rem;line-height:1.5}
+
+/* ---------- trabajos / galería ---------- */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.shot{
+  position:relative;aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--line);background:var(--surface-2);
+}
+.shot img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.shot:hover img{transform:scale(1.05)}
+/* placeholder visual cuando aún no hay foto */
+.shot .ph{position:absolute;inset:0;display:grid;place-items:center;
+  background-image:linear-gradient(var(--mesh) 1px,transparent 1px),linear-gradient(90deg,var(--mesh) 1px,transparent 1px);
+  background-size:16px 16px;color:var(--muted)}
+.shot .ph svg{width:38px;height:38px;stroke:currentColor;fill:none;stroke-width:1.4;opacity:.6}
+.shot .cap{position:absolute;left:0;right:0;bottom:0;padding:16px 16px 14px;
+  background:linear-gradient(transparent,color-mix(in srgb,var(--ink) 88%,transparent));
+  color:#fff;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;opacity:0;transform:translateY(8px);transition:opacity .3s,transform .3s}
+.shot:hover .cap{opacity:1;transform:none}
+.shot .cap b{font-family:"Archivo",sans-serif;font-weight:700;font-size:.95rem}
+.shot .cap .mono{color:rgba(255,255,255,.75)}
+.gallery-note{margin-top:22px;font-size:13px;color:var(--muted);display:flex;gap:9px;align-items:center}
+.gallery-note svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:1.7;flex:0 0 auto}
+
+/* ---------- promesa strip ---------- */
+.promise{background:var(--ink);color:var(--bg);transition:background .5s}
+.promise .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.promise .item h4{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.15rem;margin-bottom:8px}
+.promise .item p{color:color-mix(in srgb,var(--bg) 65%,transparent);font-size:.95rem}
+.promise .item .mono{color:var(--accent);display:block;margin-bottom:14px}
+[data-theme="dark"] .promise .item .mono{color:var(--accent)}
+
+/* ---------- contacto ---------- */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+.contact-left h2{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(1.9rem,4.5vw,3rem);letter-spacing:-.02em;line-height:1.02;margin-bottom:18px}
+.contact-left p{color:var(--muted);max-width:40ch;margin-bottom:32px}
+.direct{display:flex;flex-direction:column;gap:12px}
+.direct a{display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);transition:border-color .2s,transform .18s,background .25s}
+.direct a:hover{border-color:var(--ink);transform:translateX(4px)}
+.direct a svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.7;flex:0 0 auto}
+.direct a .lbl{display:flex;flex-direction:column}
+.direct a .lbl .k{font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.05em}
+.direct a .lbl .v{font-weight:600}
+
+form{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
+.field{margin-bottom:18px}
+.field label{display:block;font-family:"IBM Plex Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
+.field input,.field select,.field textarea{
+  width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--bg);color:var(--ink);font-family:inherit;font-size:15px;transition:border-color .2s}
+.field textarea{resize:vertical;min-height:110px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+form .btn-primary{width:100%;justify-content:center;margin-top:6px}
+.form-hint{margin-top:14px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:44px 0;transition:border-color .5s}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.foot .brand{font-size:14px}
+.foot small{color:var(--muted);font-size:13px}
+
+/* ================= MODO AHORRO ================= */
+body.eco *,body.eco *::before,body.eco *::after{
+  animation:none !important;
+  transition:none !important;
+}
+body.eco .hero-mesh,body.eco .marquee,body.eco .shot .ph{display:none}
+body.eco header{backdrop-filter:none}
+body.eco .obs,body.eco .fade-up,body.eco .reveal-line>span{opacity:1 !important;transform:none !important}
+body.eco .shadow,body.eco form{box-shadow:none}
+body.eco .svc::after{display:none}
+body.eco .svc:hover{color:inherit}
+body.eco .svc:hover .svc-num,body.eco .svc:hover .svc-desc{color:var(--muted)}
+body.eco .svc:hover{background:var(--surface-2)}
+
+/* respeta reduce-motion del sistema */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto}
+  .hero-mesh,.marquee-track{animation:none}
+  .reveal-line>span,.obs,.fade-up{opacity:1 !important;transform:none !important}
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .services{grid-template-columns:1fr 1fr}
+  .gallery{grid-template-columns:1fr 1fr}
+  .promise .wrap{grid-template-columns:1fr;gap:28px}
+  .contact-grid{grid-template-columns:1fr;gap:36px}
+}
+@media (max-width:640px){
+  .wrap{padding:0 20px}
+  .nav-links{display:none}
+  .menu-toggle{display:grid}
+  section{padding:66px 0}
+  .hero{padding:64px 0 54px}
+  .services{grid-template-columns:1fr}
+  .gallery{grid-template-columns:1fr 1fr;gap:12px}
+  .eco-btn span.txt{display:none}
+  .eco-btn{padding:0;width:40px;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="#inicio" class="brand"><span class="logo" aria-hidden="true"></span><span id="brandName">Tu Nombre</span></a>
+    <nav class="nav-links" aria-label="Principal">
+      <a href="#servicios">Servicios</a>
+      <a href="#trabajos">Trabajos</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="nav-tools">
+      <button class="iconbtn eco-btn" id="ecoBtn" aria-pressed="false" title="Modo ahorro de recursos">
+        <span class="dot" aria-hidden="true"></span><span class="txt">Ahorro</span>
+      </button>
+      <button class="iconbtn" id="themeBtn" aria-label="Cambiar tema claro/oscuro" title="Tema">
+        <svg id="themeIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <button class="iconbtn menu-toggle" id="menuBtn" aria-label="Menú">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="inicio">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" style="padding-top:96px">
+    <div class="hero-mesh" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-eyebrow mono eyebrow"><span class="tick"></span>Trabajos independientes · Visita sin costo</div>
+      <h1>
+        <span class="reveal-line"><span>Cuido tu casa</span></span>
+        <span class="reveal-line"><span>de arriba</span></span>
+        <span class="reveal-line"><span><em class="paint" style="font-style:normal">abajo.</em></span></span>
+      </h1>
+      <p class="hero-sub fade-up">
+        Pintura, resane de grietas, <strong>impermeabilización</strong>, mosquiteros a medida y
+        mantenimiento de ventanas y puertas de acero. Paso a ver el lugar, te doy el precio
+        y quedamos. Trabajo limpio, parejo y que dura.
+      </p>
+      <div class="cta-row fade-up">
+        <a class="btn btn-primary" id="heroWhats" href="#contacto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Agendar visita
+        </a>
+        <a class="btn btn-ghost" href="#trabajos">Ver trabajos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MARQUEE ================= -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track" id="marquee">
+      <span>Pintura</span><span>Resane de grietas</span><span>Impermeabilización</span><span>Mosquiteros</span><span>Ventanas de acero</span><span>Puertas de acero</span><span>Mantenimiento</span>
+      <span>Pintura</span><span>Resane de grietas</span><span>Impermeabilización</span><span>Mosquiteros</span><span>Ventanas de acero</span><span>Puertas de acero</span><span>Mantenimiento</span>
+    </div>
+  </div>
+
+  <!-- ================= SERVICIOS ================= -->
+  <section id="servicios">
+    <div class="wrap">
+      <div class="sec-head obs">
+        <h2>Lo que hago</h2>
+        <p>Cada trabajo con materiales de calidad y acabado cuidado. Si tu casa lo necesita, aquí está.</p>
+      </div>
+      <div class="services obs">
+
+        <article class="svc" tabindex="0">
+          <div class="svc-num mono">01</div>
+          <svg class="svc-ico" viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v6h13a2 2 0 0 1 2 2v2a3 3 0 0 0 3-3V5a2 2 0 0 0-2-2z"/><path d="M11 11v4a2 2 0 0 0 2 2h1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3"/></svg>
+          <h3>Pintura</h3>
+          <p class="svc-desc">Interiores y exteriores, ventanas y herrería. Acabados parejos, sin escurridos ni manchas.</p>
+        </article>
+
+        <article class="svc" tabindex="0">
+          <div class="svc-num mono">02</div>
+          <svg class="svc-ico" viewBox="0 0 24 24"><path d="M4 3v6M4 21v-6M20 3v18"/><path d="M4 9c4 0 5 3 8 3s5-3 8-3M4 15c4 0 5-3 8-3"/></svg>
+          <h3>Resane de grietas</h3>
+          <p class="svc-desc">Sello y reparo grietas antes de pintar, para que no vuelvan a salir con el tiempo.</p>
+        </article>
+
+        <article class="svc" tabindex="0">
+          <div class="svc-num mono">03</div>
+          <svg class="svc-ico" viewBox="0 0 24 24"><path d="M12 2s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/><path d="M9 14a3 3 0 0 0 3 3"/></svg>
+          <h3>Impermeabilización</h3>
+          <p class="svc-desc">Protejo techos y azoteas contra filtraciones y humedad. Adiós goteras en temporada de lluvia.</p>
+        </article>
+
+        <article class="svc" tabindex="0">
+          <div class="svc-num mono">04</div>
+          <svg class="svc-ico" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M4 8h16M4 13h16M4 18h16M9 3v18M14 3v18"/></svg>
+          <h3>Mosquiteros</h3>
+          <p class="svc-desc">Instalo mosquiteros a la medida en ventanas y puertas. Ventilas sin dejar entrar bichos.</p>
+        </article>
+
+        <article class="svc" tabindex="0">
+          <div class="svc-num mono">05</div>
+          <svg class="svc-ico" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M4 12h16"/><circle cx="15" cy="12" r="1"/></svg>
+          <h3>Ventanas y puertas de acero</h3>
+          <p class="svc-desc">Pinto y doy mantenimiento a la herrería para que no se oxide y se vea como nueva.</p>
+        </article>
+
+        <article class="svc" tabindex="0">
+          <div class="svc-num mono">06</div>
+          <svg class="svc-ico" viewBox="0 0 24 24"><path d="M14 7l3 3M5 21l3-1 11-11a2 2 0 0 0 0-3l-1-1a2 2 0 0 0-3 0L4 16l-1 3z"/></svg>
+          <h3>Mantenimiento general</h3>
+          <p class="svc-desc">Y demás arreglos de la casa. Si algo se echó a perder, lo revisamos y lo dejamos bien.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TRABAJOS ================= -->
+  <section id="trabajos" style="background:var(--surface-2);transition:background .5s">
+    <div class="wrap">
+      <div class="sec-head obs">
+        <h2>Trabajos hechos</h2>
+        <p>Una muestra de proyectos terminados. El mejor argumento es el resultado.</p>
+      </div>
+
+      <!-- =========================================================== -->
+      <!--  PARA PONER TUS FOTOS:                                       -->
+      <!--  dentro de cada <div class="shot"> reemplaza el bloque       -->
+      <!--  <div class="ph">...</div> por: <img src="foto.jpg" alt="">  -->
+      <!--  (guarda tus fotos junto a este archivo)                     -->
+      <!-- =========================================================== -->
+      <div class="gallery obs">
+
+        <div class="shot">
+          <img src="pictures/web/Antes_ceja.jpg" alt="Cornisa con grieta y filtración de humedad antes de reparar">
+          <div class="cap"><b>Grieta y filtración</b><span class="mono">Antes</span></div>
+        </div>
+
+        <div class="shot">
+          <img src="pictures/web/Despues_ceja.jpg" alt="Cornisa resanada e impermeabilizada, terminada">
+          <div class="cap"><b>Resanado e impermeabilizado</b><span class="mono">Después</span></div>
+        </div>
+
+        <div class="shot">
+          <img src="pictures/web/herreria_antes.jpg" alt="Puerta de acero con pintura oxidada antes de repintar">
+          <div class="cap"><b>Puerta de acero oxidada</b><span class="mono">Antes</span></div>
+        </div>
+
+        <div class="shot">
+          <img src="pictures/web/herreria_despues.jpg" alt="Puerta de acero repintada de negro, terminada">
+          <div class="cap"><b>Puerta pintada y renovada</b><span class="mono">Después</span></div>
+        </div>
+
+        <div class="shot">
+          <img src="pictures/web/Mosquitero_arriba.jpg" alt="Mosquitero a medida instalado en puerta">
+          <div class="cap"><b>Mosquitero a medida</b><span class="mono">Instalado</span></div>
+        </div>
+
+        <div class="shot">
+          <img src="pictures/web/Antes_ceja2.jpg" alt="Detalle de grieta en cornisa antes de resanar">
+          <div class="cap"><b>Grieta antes de resanar</b><span class="mono">Detalle</span></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PROMESA ================= -->
+  <section class="promise">
+    <div class="wrap">
+      <div class="item obs"><span class="mono">Sin sorpresas</span><h4>Cotizo en tu casa</h4><p>Voy, reviso el lugar y te paso el precio antes de empezar. La visita no te cuesta.</p></div>
+      <div class="item obs"><span class="mono">Bien hecho</span><h4>Materiales de calidad</h4><p>Uso buen material para que el trabajo aguante y no tengas que repetirlo pronto.</p></div>
+      <div class="item obs"><span class="mono">Cumplido</span><h4>Trabajo garantizado</h4><p>Acordamos fecha y la respeto. Dejo todo limpio cuando termino.</p></div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACTO ================= -->
+  <section id="contacto">
+    <div class="wrap contact-grid">
+      <div class="contact-left obs">
+        <h2>Agendemos una visita</h2>
+        <p>Para darte un precio justo necesito ver el lugar. Escríbeme por WhatsApp o llena el formulario y pasamos a revisar sin costo ni compromiso.</p>
+        <div class="direct">
+          <a id="waLink" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg>
+            <span class="lbl"><span class="k">WhatsApp</span><span class="v" id="waText">Enviar mensaje</span></span>
+          </a>
+          <a id="telLink" href="#">
+            <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+            <span class="lbl"><span class="k">Teléfono</span><span class="v" id="telText">Llámame</span></span>
+          </a>
+          <a id="mailLink" href="#">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            <span class="lbl"><span class="k">Correo</span><span class="v" id="mailText">Escríbeme</span></span>
+          </a>
+        </div>
+      </div>
+
+      <form id="contactForm" class="obs" novalidate>
+        <div class="field">
+          <label for="f-name">Tu nombre</label>
+          <input id="f-name" name="name" type="text" placeholder="¿Cómo te llamas?" required>
+        </div>
+        <div class="field">
+          <label for="f-phone">Teléfono</label>
+          <input id="f-phone" name="phone" type="tel" placeholder="Para poder responderte">
+        </div>
+        <div class="field">
+          <label for="f-type">Tipo de trabajo</label>
+          <select id="f-type" name="type">
+            <option>Pintura</option>
+            <option>Resane de grietas</option>
+            <option>Impermeabilización</option>
+            <option>Mosquiteros</option>
+            <option>Ventanas / puertas de acero</option>
+            <option>Mantenimiento general</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-zone">Zona o colonia</label>
+          <input id="f-zone" name="zone" type="text" placeholder="Para saber a dónde ir a revisar">
+        </div>
+        <div class="field">
+          <label for="f-when">¿Cuándo te viene bien la visita?</label>
+          <input id="f-when" name="when" type="text" placeholder="Ej: entre semana por la tarde, sábado…">
+        </div>
+        <div class="field">
+          <label for="f-msg">Cuéntame</label>
+          <textarea id="f-msg" name="msg" placeholder="Describe el trabajo y el lugar: tamaño aproximado, estado, si hay humedad, etc."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+          Agendar visita por WhatsApp
+        </button>
+        <p class="form-hint">Se abre WhatsApp con tu solicitud lista para enviar.</p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span class="brand"><span class="logo" aria-hidden="true"></span><span id="footName">Tu Nombre</span></span>
+    <small id="footArea">Trabajos independientes · Zona de servicio: Tu ciudad</small>
+    <small>© <span id="year"></span></small>
+  </div>
+</footer>
+
+<script>
+/* =================================================================
+   CONFIG  —  CAMBIA ESTOS DATOS POR LOS TUYOS
+   ================================================================= */
+const CONFIG = {
+  nombre:   "Jose Angel Hernadez Amaya",              // tu nombre o el de tu negocio
+  ciudad:   "Lazaro Cardenas",              // zona donde trabajas
+  telefono: "527531812346",           // WhatsApp con lada país. México = 52. Ej: 5218112345678
+  correo:   "joseangelhernandezamaya2@gmail.com"    // tu correo (opcional)
+};
+/* ================================================================= */
+
+(function () {
+  // Rellena datos visibles
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set("brandName", CONFIG.nombre); set("footName", CONFIG.nombre);
+  set("footArea", "Trabajos independientes · Zona de servicio: " + CONFIG.ciudad);
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  const soloDigitos = CONFIG.telefono.replace(/\D/g, "");
+  const waBase = "https://wa.me/" + soloDigitos;
+  document.getElementById("waLink").href = waBase + "?text=" + encodeURIComponent("Hola, vi tu página y quiero agendar una visita para cotizar un trabajo.");
+  document.getElementById("waText").textContent = "+" + soloDigitos;
+  document.getElementById("telLink").href = "tel:+" + soloDigitos;
+  document.getElementById("telText").textContent = "+" + soloDigitos;
+  document.getElementById("mailLink").href = "mailto:" + CONFIG.correo;
+  document.getElementById("mailText").textContent = CONFIG.correo;
+
+  // Almacenamiento seguro (no rompe si el navegador lo bloquea)
+  const store = {
+    get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+    set(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+  };
+
+  /* ---------- TEMA claro / oscuro ---------- */
+  const root = document.documentElement;
+  const themeBtn = document.getElementById("themeBtn");
+  const themeIcon = document.getElementById("themeIcon");
+  const sunPath = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  const moonPath = '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+  function applyTheme(t){
+    root.setAttribute("data-theme", t);
+    themeIcon.innerHTML = t === "dark" ? sunPath : moonPath;
+    themeBtn.setAttribute("aria-label", t === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+  }
+  const savedTheme = store.get("tema");
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(savedTheme || (prefersDark ? "dark" : "light"));
+  themeBtn.addEventListener("click", () => {
+    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(next); store.set("tema", next);
+  });
+
+  /* ---------- MODO AHORRO ---------- */
+  const ecoBtn = document.getElementById("ecoBtn");
+  function applyEco(on){
+    document.body.classList.toggle("eco", on);
+    ecoBtn.setAttribute("aria-pressed", on ? "true" : "false");
+    ecoBtn.title = on ? "Modo ahorro activado" : "Activar modo ahorro de recursos";
+  }
+  // Detección automática de equipos de gama baja / datos limitados
+  function equipoLimitado(){
+    try {
+      const con = navigator.connection || {};
+      if (con.saveData) return true;                               // "ahorro de datos" activo
+      if (con.effectiveType && /2g/.test(con.effectiveType)) return true;
+      if (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 2) return true;
+      if (typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 2) return true;
+    } catch(e){}
+    return false;
+  }
+  const savedEco = store.get("ahorro");           // "1" / "0" si el usuario ya eligió
+  let ecoInicial = savedEco !== null ? (savedEco === "1") : equipoLimitado();
+  applyEco(ecoInicial);
+  ecoBtn.addEventListener("click", () => {
+    const next = !document.body.classList.contains("eco");
+    applyEco(next); store.set("ahorro", next ? "1" : "0");
+  });
+
+  /* ---------- Reveal de carga ---------- */
+  requestAnimationFrame(() => document.body.classList.add("loaded"));
+
+  /* ---------- Scroll reveal ---------- */
+  const items = document.querySelectorAll(".obs");
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting){
+          e.target.style.transitionDelay = Math.min(i * 60, 180) + "ms";
+          e.target.classList.add("in");
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.14, rootMargin: "0px 0px -8% 0px" });
+    items.forEach(el => io.observe(el));
+  } else {
+    items.forEach(el => el.classList.add("in"));
+  }
+
+  /* ---------- Menú móvil (scroll suave a secciones) ---------- */
+  document.getElementById("menuBtn").addEventListener("click", () => {
+    document.getElementById("servicios").scrollIntoView({ behavior: "smooth" });
+  });
+
+  /* ---------- Formulario → WhatsApp ---------- */
+  document.getElementById("contactForm").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const g = id => (document.getElementById(id).value || "").trim();
+    const name = g("f-name");
+    if (!name){ document.getElementById("f-name").focus(); return; }
+    const msg =
+      "Hola, soy " + name + ". Quiero agendar una visita para cotizar.\n" +
+      "Trabajo: " + g("f-type") + "\n" +
+      (g("f-zone") ? "Zona: " + g("f-zone") + "\n" : "") +
+      (g("f-when") ? "Horario que me viene: " + g("f-when") + "\n" : "") +
+      (g("f-phone") ? "Mi teléfono: " + g("f-phone") + "\n" : "") +
+      (g("f-msg") ? "Detalle: " + g("f-msg") : "");
+    window.open(waBase + "?text=" + encodeURIComponent(msg), "_blank");
+  });
+})();
+</script>
+</body>
+</html>

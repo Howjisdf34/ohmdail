@@ -1,0 +1,9 @@
+.DS_Store
+Thumbs.db
+
+# Fotos originales sin optimizar (pesadas, no se usan en el sitio).
+# El sitio sirve las versiones optimizadas de pictures/web/.
+pictures/*.jpg
+pictures/*.jpeg
+pictures/*.png
+!pictures/web/
