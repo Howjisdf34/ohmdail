@@ -50,6 +50,7 @@
   --tape:#e2d2a2;          /* cinta de pintor (masking) */
   --tape-ink:#3b3220;
   --steel:#15161a;         /* herrería pintada de negro */
+  --paint-white:#efeee9;   /* pintura blanca de muros (igual en ambos temas) */
   --wall-old:color-mix(in srgb,var(--muted) 24%,var(--surface));
   --wall-new:color-mix(in srgb,var(--accent) 16%,var(--surface));
   --radius:4px;
@@ -444,9 +445,18 @@ section{padding:104px 0}
 .ba-tag.l{left:14px}
 .ba-tag.r{right:14px;background:var(--accent)}
 
-.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;grid-auto-flow:dense}
-.shot{position:relative;aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:var(--surface-2)}
-.shot.wide{grid-column:span 2;aspect-ratio:auto}
+/* carrete deslizable: sale del ancho del contenido hasta la orilla de la pantalla */
+.reel{--gut:max(28px,calc((100% - var(--maxw)) / 2 + 28px));
+  display:flex;gap:18px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;
+  padding:4px var(--gut) 6px;scroll-padding-inline:var(--gut);margin-top:56px;cursor:grab;user-select:none;-webkit-user-select:none}
+.reel::-webkit-scrollbar{display:none}
+.reel.dragging{cursor:grabbing;scroll-snap-type:none}
+.reel.dragging .shot-btn{pointer-events:none}
+.reel-ui{display:flex;align-items:center;gap:14px;margin-top:20px}
+.reel-bar{position:relative;flex:1;height:2px;background:var(--line);overflow:hidden}
+.reel-bar i{position:absolute;inset:0;background:var(--accent);transform-origin:left;transform:scaleX(var(--rp,.3));transition:transform .2s ease}
+.shot{position:relative;flex:0 0 auto;height:clamp(320px,36vw,460px);aspect-ratio:4/5;scroll-snap-align:start;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:var(--surface-2)}
+.shot.wide{aspect-ratio:4/3}
 .shot-btn{position:absolute;inset:0;border:0;padding:0;background:none;cursor:zoom-in;display:block;width:100%}
 .shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
 .shot:hover img{transform:scale(1.05)}
@@ -454,14 +464,53 @@ section{padding:104px 0}
 .js .shot::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
   background:repeating-linear-gradient(90deg,transparent 0 3px,rgba(255,255,255,.07) 3px 5px),var(--accent);
   transform-origin:right;transition:transform .9s var(--ease-io) calc(var(--d,0) * 110ms + .1s)}
-.js .gallery.in .shot::after{transform:scaleX(0)}
+.js .reel.in .shot::after{transform:scaleX(0)}
 .shot figcaption{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:40px 16px 14px;pointer-events:none;
   background:linear-gradient(transparent,rgba(10,11,14,.82));color:#fff;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
 .shot figcaption b{font-family:"Archivo",sans-serif;font-weight:700;font-size:.95rem;line-height:1.25}
 .chip{flex:0 0 auto;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);backdrop-filter:blur(4px)}
 .chip.after{background:var(--accent)}
-.gallery-note{margin-top:22px;font-size:13px;color:var(--muted);display:flex;gap:9px;align-items:center}
-.gallery-note svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:1.7;flex:0 0 auto}
+
+/* ---------- obra completa ---------- */
+#trabajos{background:var(--surface-2);transition:background .5s}
+.obra-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:40px;align-items:start}
+.ba.ba-wide{aspect-ratio:4/3}
+.ob-stamp{position:absolute;left:14px;bottom:14px;padding:5px 10px;border-radius:99px;background:rgba(10,11,14,.6);color:#fff;backdrop-filter:blur(4px);pointer-events:none}
+.ob-stamp:empty{display:none}
+/* al cambiar de cuarto, un rodillo azul barre la foto */
+.ob-wipe{position:absolute;inset:0;z-index:4;pointer-events:none;display:grid;place-items:center;
+  background:repeating-linear-gradient(180deg,transparent 0 3px,rgba(255,255,255,.07) 3px 5px),var(--accent);
+  color:var(--accent-ink);transform:scaleX(0);transform-origin:left}
+.ob-wipe span{font-family:"Archivo",sans-serif;font-weight:900;font-size:clamp(1.8rem,4.4vw,3.4rem);letter-spacing:-.03em;opacity:0}
+.ob-wipe.go{animation:wipe .9s var(--ease-io) forwards}
+.ob-wipe.go span{animation:wipeTxt .9s ease forwards}
+@keyframes wipe{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+@keyframes wipeTxt{30%{opacity:0;transform:translateY(10px)}45%,62%{opacity:1;transform:none}80%,100%{opacity:0}}
+
+/* muestras de pintura: color de antes → blanco */
+.swatches{display:flex;flex-direction:column;gap:10px;margin-bottom:26px}
+.swatch{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:center;text-align:left;padding:10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);cursor:pointer;
+  transition:border-color .25s,transform .35s var(--ease),box-shadow .35s,background .5s}
+.swatch:hover{border-color:var(--ink)}
+.swatch.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow);transform:translateX(6px)}
+.sw-chip{position:relative;width:64px;height:64px;border-radius:3px;overflow:hidden;background:linear-gradient(var(--c1) 0 62%,var(--c2) 62%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sw-chip::after{content:"";position:absolute;inset:0;background:var(--paint-white);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);clip-path:polygon(100% 0,100% 100%,0 100%)}
+.swatch.on .sw-chip::after{animation:chipPaint .8s var(--ease) both}
+@keyframes chipPaint{from{clip-path:polygon(100% 100%,100% 100%,100% 100%)}}
+.sw-name{display:block;font-family:"Archivo",sans-serif;font-weight:800;font-size:1.08rem;letter-spacing:-.01em;line-height:1.2}
+.sw-colors{display:block;margin-top:4px;color:var(--muted);font-size:10.5px}
+.ob-info h3{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.015em;margin-bottom:8px}
+.ob-info p{color:var(--muted);font-size:.98rem;line-height:1.55}
+.ob-info.swap{animation:infoIn .6s var(--ease)}
+@keyframes infoIn{from{opacity:0;transform:translateY(10px)}}
+.ob-tags{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin-top:16px}
+.ob-tags li{padding:4px 10px;border-radius:99px;border:1px solid var(--accent);color:var(--accent);font-size:10.5px}
+.ob-detail{display:flex;gap:14px;align-items:center;width:100%;margin-top:22px;padding:8px;border:1px dashed var(--line);border-radius:var(--radius);background:none;cursor:zoom-in;text-align:left;transition:border-color .2s}
+.ob-detail:hover{border-color:var(--accent)}
+.ob-detail[hidden]{display:none}
+.ob-detail img{width:88px;height:66px;object-fit:cover;border-radius:3px;flex:0 0 auto}
+.ob-detail b{display:block;font-family:"Archivo",sans-serif;font-weight:700;font-size:.95rem}
+.ob-detail .mono{color:var(--muted);font-size:10.5px}
 
 /* visor de fotos */
 .lb{border:0;padding:0;margin:0;background:transparent;width:100%;height:100%;max-width:none;max-height:none;color:#fff;overflow:hidden}
@@ -544,7 +593,8 @@ body.eco .hero-mesh,body.eco .hc-stage::before,body.eco .fab::before,body.eco .h
 body.eco header,body.eco .ba-tag,body.eco .chip,body.eco .lb::backdrop{backdrop-filter:none}
 body.eco .obs,body.eco .fade-up,body.eco .reveal-line>span{opacity:1 !important;transform:none !important}
 body.eco .house-card,body.eco form,body.eco .stamp,body.eco .tape,body.eco .fab,body.eco .ba-knob{box-shadow:none}
-body.eco .shot::after,body.eco .svc::after{display:none}
+body.eco .shot::after,body.eco .svc::after,body.eco .ob-wipe{display:none}
+body.eco .ob-stamp{backdrop-filter:none}
 body.eco .svc:hover,body.eco .svc:focus-visible{color:inherit;background:var(--surface-2)}
 body.eco .svc:hover .svc-num,body.eco .svc:hover .svc-desc,body.eco .svc:focus-visible .svc-num,body.eco .svc:focus-visible .svc-desc{color:var(--muted)}
 body.eco .bigword{background-size:100% 100%}
@@ -566,7 +616,11 @@ body.eco .shot:hover img{transform:none}
   .services{grid-template-columns:1fr 1fr}
   .steps{grid-template-columns:1fr 1fr;row-gap:40px}
   .track{display:none}
-  .gallery{grid-template-columns:1fr 1fr}
+  .obra-grid{grid-template-columns:1fr;gap:26px}
+  .swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .swatch{grid-template-columns:1fr;gap:10px;padding:8px}
+  .swatch.on{transform:translateY(-4px)}
+  .sw-chip{width:100%;height:56px}
   .promise .wrap{grid-template-columns:1fr;gap:28px}
   .contact-grid{grid-template-columns:1fr;gap:36px}
 }
@@ -584,8 +638,10 @@ body.eco .shot:hover img{transform:none}
   .step{display:grid;grid-template-columns:56px 1fr;column-gap:18px}
   .step .n{margin-bottom:0;grid-row:span 3}
   .ba-row{grid-template-columns:1fr;gap:28px}
-  .gallery{gap:12px}
-  .shot.wide{aspect-ratio:4/3}
+  .reel{--gut:20px;gap:12px;margin-top:40px}
+  .shot{height:340px}
+  .sw-name{font-size:.92rem}
+  .sw-colors{display:none}
   .shot figcaption{padding:30px 10px 10px;flex-direction:column;align-items:flex-start;gap:6px}
   .shot figcaption b{font-size:.85rem}
   #brandName{width:min-content;font-size:15px;line-height:1.05}
@@ -640,7 +696,7 @@ body.eco .shot:hover img{transform:none}
     <nav class="nav-links" aria-label="Principal">
       <a href="#servicios">Servicios</a>
       <a href="#proceso">Cómo trabajo</a>
-      <a href="#trabajos">Trabajos</a>
+      <a href="#obra">Trabajos</a>
       <a href="#contacto">Contacto</a>
     </nav>
     <div class="nav-tools">
@@ -661,7 +717,7 @@ body.eco .shot:hover img{transform:none}
 <nav class="mnav" id="mnav" aria-label="Menú móvil">
   <a href="#servicios" style="--i:0">Servicios</a>
   <a href="#proceso" style="--i:1">Cómo trabajo</a>
-  <a href="#trabajos" style="--i:2">Trabajos</a>
+  <a href="#obra" style="--i:2">Trabajos</a>
   <a href="#contacto" style="--i:3">Agendar visita</a>
   <p class="mono">Visita y presupuesto sin costo</p>
 </nav>
@@ -689,7 +745,7 @@ body.eco .shot:hover img{transform:none}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
             Agendar visita
           </a>
-          <a class="btn btn-ghost" href="#trabajos">Ver trabajos</a>
+          <a class="btn btn-ghost" href="#obra">Ver trabajos</a>
         </div>
         <div class="free-note fade-up">
           <span><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>La visita y el presupuesto son gratis</span>
@@ -873,11 +929,81 @@ body.eco .shot:hover img{transform:none}
     </div>
   </section>
 
+  <!-- ================= OBRA COMPLETA ================= -->
+  <!-- =========================================================== -->
+  <!--  OBRA COMPLETA: cada cuarto es un <button class="swatch">.   -->
+  <!--  Sus fotos y textos van en los data-* del botón:             -->
+  <!--  data-before / data-after (fotos), data-*-alt (descripción), -->
+  <!--  data-desc, data-tags (separadas por coma), data-stamp       -->
+  <!--  (fechas, opcional) y data-detail (foto extra, opcional).    -->
+  <!--  --c1 / --c2 = colores de antes de la pared (muestra).       -->
+  <!-- =========================================================== -->
+  <section class="obra" id="obra">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="obs"><span class="kicker mono eyebrow">Obra completa</span>Una casa, cuarto por cuarto</h2>
+        <p class="obs">Todas estas fotos son de la misma casa. Llegó con humedad, manchas, hoyos y pintura vieja. Elige un cuarto y arrastra la barra.</p>
+      </div>
+      <div class="obra-grid">
+        <div class="obra-stage obs">
+          <div class="ba ba-wide" data-ba id="obraBA">
+            <img class="ob-before" src="pictures/web/MuebleAntes.jpg" alt="Cuarto con mueble de concreto pintado de verde agua con bordes amarillos, antes" width="1600" height="1202" loading="lazy">
+            <img class="ba-after ob-after" src="pictures/web/MuebleDespues.jpg" alt="El mismo cuarto con el mueble y los muros pintados de blanco, después" width="1600" height="1202" loading="lazy">
+            <span class="ba-tag l mono">Antes</span><span class="ba-tag r mono">Después</span>
+            <span class="ob-stamp mono" id="obStamp">18 oct → 23 oct</span>
+            <div class="ba-handle"><span class="ba-knob"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
+            <input class="ba-range sr" type="range" min="0" max="100" value="50" aria-label="Comparar antes y después del cuarto">
+            <div class="ob-wipe" aria-hidden="true"><span></span></div>
+          </div>
+        </div>
+
+        <div class="obra-side obs">
+          <div class="swatches" role="group" aria-label="Elige un cuarto">
+            <button class="swatch on" type="button" aria-pressed="true" style="--c1:#86cdb8;--c2:#e0b53c"
+              data-before="pictures/web/MuebleAntes.jpg" data-before-alt="Cuarto con mueble de concreto pintado de verde agua con bordes amarillos, antes"
+              data-after="pictures/web/MuebleDespues.jpg" data-after-alt="El mismo cuarto con el mueble y los muros pintados de blanco, después"
+              data-stamp="18 oct → 23 oct" data-tags="Muros,Mueble,Pintura"
+              data-desc="Un mueble de concreto con el fondo verde agua y los bordes amarillos, igual que los muros. Quedó todo en blanco, parejo: mueble y paredes.">
+              <span class="sw-chip" aria-hidden="true"></span>
+              <span class="sw-txt"><span class="sw-name">El mueble</span><span class="sw-colors mono">Verde y amarillo → Blanco</span></span>
+            </button>
+            <button class="swatch" type="button" aria-pressed="false" style="--c1:#86cdb8;--c2:#86cdb8"
+              data-before="pictures/web/ParedVerdeAntes.jpg" data-before-alt="Cuarto con muros verde agua, hoyos y manchas, antes"
+              data-after="pictures/web/ParedVerdeDespues.jpg" data-after-alt="El mismo cuarto con los muros resanados y pintados de blanco, después"
+              data-stamp="18 oct → 23 oct" data-tags="Resane,Pintura"
+              data-detail="1"
+              data-desc="Muros verde agua con hoyos y manchas de humedad. Primero resané los hoyos y emparejé, luego pinté todo de blanco.">
+              <span class="sw-chip" aria-hidden="true"></span>
+              <span class="sw-txt"><span class="sw-name">Cuarto verde</span><span class="sw-colors mono">Verde agua → Blanco</span></span>
+            </button>
+            <button class="swatch" type="button" aria-pressed="false" style="--c1:#d885c3;--c2:#d885c3"
+              data-before="pictures/web/ParedRosaAntes.jpg" data-before-alt="Cuarto con muros rosas llenos de manchas de humedad y escurridos, antes"
+              data-after="pictures/web/ParedRosaDespues.jpg" data-after-alt="El mismo cuarto con los muros limpios y pintados de blanco, después"
+              data-stamp="" data-tags="Manchas de humedad,Resane,Pintura"
+              data-desc="Manchas de humedad y escurridos por todo el muro, sobre todo arriba. Quedó limpio, parejo y en blanco.">
+              <span class="sw-chip" aria-hidden="true"></span>
+              <span class="sw-txt"><span class="sw-name">Cuarto rosa</span><span class="sw-colors mono">Rosa → Blanco</span></span>
+            </button>
+          </div>
+          <div class="ob-info" id="obInfo">
+            <h3 id="obTitle">El mueble</h3>
+            <p id="obDesc">Un mueble de concreto con el fondo verde agua y los bordes amarillos, igual que los muros. Quedó todo en blanco, parejo: mueble y paredes.</p>
+            <ul class="ob-tags" id="obTags"><li class="mono">Muros</li><li class="mono">Mueble</li><li class="mono">Pintura</li></ul>
+          </div>
+          <button class="ob-detail" id="obDetail" type="button" data-cap="Cuarto verde · Así se veía de cerca" hidden>
+            <img src="pictures/web/ParedVerdeDetalle.jpg" alt="Acercamiento del muro verde con hoyos y escurridos de humedad, antes" width="1600" height="1200" loading="lazy">
+            <span><b>Así se veía de cerca</b><span class="mono">Toca para ampliar</span></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= TRABAJOS ================= -->
   <section id="trabajos">
     <div class="wrap">
       <div class="sec-head">
-        <h2 class="obs"><span class="kicker mono eyebrow">Trabajos hechos</span>El mejor argumento es el resultado</h2>
+        <h2 class="obs"><span class="kicker mono eyebrow">Más trabajos</span>El mejor argumento es el resultado</h2>
         <p class="obs">Arrastra la barra para ver el antes y el después. Toca cualquier foto para verla en grande.</p>
       </div>
 
@@ -885,8 +1011,9 @@ body.eco .shot:hover img{transform:none}
       <!--  PARA PONER TUS FOTOS:                                       -->
       <!--  · Comparador antes/después: cambia los dos <img> de un .ba  -->
       <!--    (primero el ANTES, luego el DESPUÉS con class="ba-after").-->
-      <!--  · Galería: copia un <figure class="shot"> y cambia src, alt -->
+      <!--  · Carrete: copia un <figure class="shot"> y cambia src, alt -->
       <!--    y data-cap. Usa class="shot wide" para fotos horizontales.-->
+      <!--    Caben las que quieras: el carrete se desliza.             -->
       <!--  (guarda las fotos optimizadas en pictures/web/)             -->
       <!-- =========================================================== -->
       <div class="ba-row">
@@ -911,29 +1038,38 @@ body.eco .shot:hover img{transform:none}
           <figcaption><b>Puerta de bodega</b><span class="mono">Pintada y renovada</span></figcaption>
         </figure>
       </div>
+    </div>
 
-      <div class="gallery obs">
-        <figure class="shot">
-          <button class="shot-btn" type="button" data-cap="Grieta y filtración en cornisa · Antes"><img src="pictures/web/Antes_ceja.jpg" alt="Cornisa con grieta y filtración de humedad antes de reparar" width="1200" height="1600" loading="lazy"></button>
-          <figcaption><b>Grieta y filtración</b><span class="chip mono">Antes</span></figcaption>
-        </figure>
-        <figure class="shot wide">
-          <button class="shot-btn" type="button" data-cap="Cornisa resanada e impermeabilizada · Después"><img src="pictures/web/Despues_ceja.jpg" alt="Cornisa resanada e impermeabilizada, terminada" width="1600" height="1200" loading="lazy"></button>
-          <figcaption><b>Resanado e impermeabilizado</b><span class="chip after mono">Después</span></figcaption>
-        </figure>
-        <figure class="shot">
-          <button class="shot-btn" type="button" data-cap="Mosquitero a medida · Instalado"><img src="pictures/web/Mosquitero_arriba.jpg" alt="Mosquitero a medida instalado en puerta" width="1200" height="1600" loading="lazy"></button>
-          <figcaption><b>Mosquitero a medida</b><span class="chip after mono">Instalado</span></figcaption>
-        </figure>
-        <figure class="shot">
-          <button class="shot-btn" type="button" data-cap="Herrajes de la puerta de bodega · Antes"><img src="pictures/web/PuertaBodegaAntes2.jpg" alt="Detalle de herrajes y cerraduras de la puerta de bodega antes de pintar" width="692" height="922" loading="lazy"></button>
-          <figcaption><b>Detalle de herrajes</b><span class="chip mono">Antes</span></figcaption>
-        </figure>
-        <figure class="shot">
-          <button class="shot-btn" type="button" data-cap="Puerta de bodega terminada · Después"><img src="pictures/web/PuertaBodegaDespues2.jpg" alt="Puerta de bodega terminada, vista completa" width="692" height="922" loading="lazy"></button>
-          <figcaption><b>Puerta de bodega terminada</b><span class="chip after mono">Después</span></figcaption>
-        </figure>
-      </div>
+    <div class="reel obs" id="reel" tabindex="0" aria-label="Más fotos de trabajos. Desliza para ver más.">
+      <figure class="shot">
+        <button class="shot-btn" type="button" data-cap="Puerta de herrería · Terminada"><img src="pictures/web/PuertaHerreria.jpg" alt="Puerta de herrería pintada en gris oscuro, terminada" width="884" height="1600" loading="lazy" draggable="false"></button>
+        <figcaption><b>Puerta de herrería</b><span class="chip after mono">Terminada</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <button class="shot-btn" type="button" data-cap="Grieta y filtración en cornisa · Antes"><img src="pictures/web/Antes_ceja.jpg" alt="Cornisa con grieta y filtración de humedad antes de reparar" width="1200" height="1600" loading="lazy" draggable="false"></button>
+        <figcaption><b>Grieta y filtración</b><span class="chip mono">Antes</span></figcaption>
+      </figure>
+      <figure class="shot wide">
+        <button class="shot-btn" type="button" data-cap="Cornisa resanada e impermeabilizada · Después"><img src="pictures/web/Despues_ceja.jpg" alt="Cornisa resanada e impermeabilizada, terminada" width="1600" height="1200" loading="lazy" draggable="false"></button>
+        <figcaption><b>Resanado e impermeabilizado</b><span class="chip after mono">Después</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <button class="shot-btn" type="button" data-cap="Mosquitero a medida · Instalado"><img src="pictures/web/Mosquitero_arriba.jpg" alt="Mosquitero a medida instalado en puerta" width="1200" height="1600" loading="lazy" draggable="false"></button>
+        <figcaption><b>Mosquitero a medida</b><span class="chip after mono">Instalado</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <button class="shot-btn" type="button" data-cap="Herrajes de la puerta de bodega · Antes"><img src="pictures/web/PuertaBodegaAntes2.jpg" alt="Detalle de herrajes y cerraduras de la puerta de bodega antes de pintar" width="692" height="922" loading="lazy" draggable="false"></button>
+        <figcaption><b>Detalle de herrajes</b><span class="chip mono">Antes</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <button class="shot-btn" type="button" data-cap="Puerta de bodega terminada · Después"><img src="pictures/web/PuertaBodegaDespues2.jpg" alt="Puerta de bodega terminada, vista completa" width="692" height="922" loading="lazy" draggable="false"></button>
+        <figcaption><b>Puerta de bodega terminada</b><span class="chip after mono">Después</span></figcaption>
+      </figure>
+    </div>
+    <div class="wrap reel-ui">
+      <button class="iconbtn" id="reelPrev" type="button" aria-label="Fotos anteriores"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="reel-bar" aria-hidden="true"><i></i></div>
+      <button class="iconbtn" id="reelNext" type="button" aria-label="Más fotos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
   </section>
 
@@ -1235,6 +1371,8 @@ const CONFIG = {
     const end = () => { drag = false; ba.classList.remove("dragging"); };
     ba.addEventListener("pointerup", end); ba.addEventListener("pointercancel", end);
     range.addEventListener("input", () => { touched = true; put(+range.value); });
+    ba.put = put;
+    ba.untouch = () => { touched = false; };
     // Pista: al aparecer, la barra se mueve sola una vez
     ba.hint = () => {
       if (calm() || touched) return;
@@ -1259,7 +1397,7 @@ const CONFIG = {
     const sib = Array.from(el.parentElement.children).filter(c => c.classList.contains("obs"));
     if (sib.length > 1) el.style.setProperty("--d", Math.min(sib.indexOf(el), 6));
   });
-  $$(".gallery .shot").forEach((s, i) => s.style.setProperty("--d", i));
+  $$(".reel .shot").forEach((s, i) => s.style.setProperty("--d", Math.min(i, 5)));
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
@@ -1268,12 +1406,77 @@ const CONFIG = {
         io.unobserve(e.target);
         const ba = $("[data-ba]", e.target);
         if (ba && ba.hint) setTimeout(ba.hint, 700);
+        if (ba && ba.id === "obraBA") preloadRooms();
       });
     }, { threshold: 0.14, rootMargin: "0px 0px -8% 0px" });
     items.forEach(el => io.observe(el));
   } else {
     items.forEach(el => el.classList.add("in"));
   }
+
+  /* ---------- Obra completa: elegir cuarto ---------- */
+  const obBA = $("#obraBA"), wipe = $(".ob-wipe", obBA), swatches = $$(".swatch");
+  const obInfo = $("#obInfo"), obDetail = $("#obDetail");
+  let obBusy = false, preloaded = false;
+  function preloadRooms(){
+    if (preloaded) return; preloaded = true;
+    swatches.forEach(b => { new Image().src = b.dataset.before; new Image().src = b.dataset.after; });
+  }
+  function applyRoom(b){
+    const before = $(".ob-before", obBA), after = $(".ob-after", obBA);
+    before.src = b.dataset.before; before.alt = b.dataset.beforeAlt;
+    after.src = b.dataset.after; after.alt = b.dataset.afterAlt;
+    set("obStamp", b.dataset.stamp || "");
+    set("obTitle", $(".sw-name", b).textContent);
+    set("obDesc", b.dataset.desc);
+    $("#obTags").innerHTML = "";
+    (b.dataset.tags || "").split(",").filter(Boolean).forEach(t => {
+      const li = document.createElement("li"); li.className = "mono"; li.textContent = t.trim(); $("#obTags").appendChild(li);
+    });
+    obDetail.hidden = !b.dataset.detail;
+    obInfo.classList.remove("swap"); void obInfo.offsetWidth; obInfo.classList.add("swap");
+    obBA.untouch(); obBA.put(50);
+  }
+  swatches.forEach(b => {
+    b.addEventListener("pointerenter", preloadRooms, { once: true });
+    b.addEventListener("click", () => {
+      if (b.classList.contains("on") || obBusy) return;
+      swatches.forEach(s => { s.classList.toggle("on", s === b); s.setAttribute("aria-pressed", s === b ? "true" : "false"); });
+      if (calm()) return applyRoom(b);
+      obBusy = true;
+      $("span", wipe).textContent = $(".sw-name", b).textContent;
+      wipe.classList.remove("go"); void wipe.offsetWidth; wipe.classList.add("go");
+      setTimeout(() => applyRoom(b), 420);                         // se cambia la foto bajo la pintura
+      setTimeout(() => { obBusy = false; obBA.hint(); }, 950);
+    });
+  });
+
+  /* ---------- Carrete de fotos ---------- */
+  const reel = $("#reel"), reelBar = $(".reel-bar");
+  function reelProgress(){
+    const max = reel.scrollWidth - reel.clientWidth;
+    reelBar.style.setProperty("--rp", max > 0 ? Math.max(.12, (reel.scrollLeft + reel.clientWidth) / reel.scrollWidth).toFixed(3) : 1);
+  }
+  reel.addEventListener("scroll", reelProgress, { passive: true });
+  window.addEventListener("resize", reelProgress, { passive: true });
+  reelProgress();
+  const reelGo = dir => reel.scrollBy({ left: dir * reel.clientWidth * .7, behavior: calm() ? "auto" : "smooth" });
+  $("#reelPrev").addEventListener("click", () => reelGo(-1));
+  $("#reelNext").addEventListener("click", () => reelGo(1));
+  // Arrastrar con el mouse (en celular ya se desliza con el dedo)
+  let rd = null;
+  reel.addEventListener("pointerdown", e => { if (e.pointerType === "mouse" && e.button === 0) rd = { x: e.clientX, s: reel.scrollLeft, moved: false }; });
+  window.addEventListener("pointermove", e => {
+    if (!rd) return;
+    const dx = e.clientX - rd.x;
+    if (!rd.moved && Math.abs(dx) > 6) { rd.moved = true; reel.classList.add("dragging"); }
+    if (rd.moved) reel.scrollLeft = rd.s - dx;
+  });
+  window.addEventListener("pointerup", () => {
+    if (!rd) return;
+    const moved = rd.moved; rd = null;
+    if (moved) requestAnimationFrame(() => reel.classList.remove("dragging"));   // evita abrir la foto al soltar
+  });
 
   /* ---------- Scroll: header, barra de avance, proceso, botón flotante ---------- */
   const steps = $("#steps"), stepEls = $$(".step"), contact = $("#contacto"), fab = $("#fab");
@@ -1311,7 +1514,7 @@ const CONFIG = {
   window.matchMedia && matchMedia("(min-width:641px)").addEventListener("change", e => { if (e.matches) setMenu(false); });
 
   /* ---------- Visor de fotos ---------- */
-  const lb = $("#lb"), lbImg = $("#lbImg"), lbCap = $("#lbCap"), shots = $$(".shot-btn");
+  const lb = $("#lb"), lbImg = $("#lbImg"), lbCap = $("#lbCap"), shots = $$("button[data-cap]");
   let cur = 0;
   function show(i){
     cur = (i + shots.length) % shots.length;

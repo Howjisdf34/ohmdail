@@ -122,14 +122,22 @@ Si agregas animaciones nuevas, respeta esos dos apagados.
 ## Galería de trabajos
 
 Fotos optimizadas en `pictures/web/` (las originales en `pictures/` no se suben;
-ver `.gitignore`). Dos tipos de bloque, con un comentario `PARA PONER TUS FOTOS`
-en el HTML:
+ver `.gitignore`). Al optimizar: máx. 1600 px, JPEG calidad ~80 y **sin EXIF**
+(las fotos del celular traen la ubicación GPS de la casa del cliente).
+Bloques, con comentarios `PARA PONER TUS FOTOS` / `OBRA COMPLETA` en el HTML:
 
+- **Obra completa (`#obra`):** varios cuartos de una misma casa (pared y mueble).
+  Un solo comparador grande (`#obraBA`) y botones `.swatch` con forma de muestra
+  de pintura (color de antes `--c1/--c2` → blanco). Cada botón guarda sus fotos
+  y textos en `data-*`. Al cambiar de cuarto, un rodillo azul (`.ob-wipe`) barre
+  la foto. Las fechas (`data-stamp`) salen del EXIF de las fotos originales.
 - **Comparador antes/después (`.ba`):** dos `<img>` (antes, luego `.ba-after`).
   Se arrastra con el dedo/mouse o con teclado (range oculto). Solo sirve con
   pares tomados desde el mismo ángulo.
-- **Galería (`.shot`):** `<figure>` con botón que abre el visor (`<dialog id="lb">`).
-  `class="shot wide"` para fotos horizontales.
+- **Carrete (`#reel` con `.shot`):** fila deslizable (dedo, mouse o flechas) que
+  llega hasta la orilla de la pantalla; caben las fotos que sean. Cada `<figure>`
+  tiene un botón que abre el visor (`<dialog id="lb">`). `class="shot wide"` para
+  fotos horizontales.
 
 ## Pendientes / próximos pasos sugeridos
 
