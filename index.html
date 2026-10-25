@@ -1391,6 +1391,17 @@ const CONFIG = {
   }
   $$("[data-ba]").forEach(setupBA);
 
+  /* ---------- Fotos: si una falla (señal del celular o un despliegue a medias), se reintenta sola ---------- */
+  document.addEventListener("error", e => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement) || !/^https?:|^file:/.test(img.src)) return;
+    const n = (+img.dataset.retry || 0) + 1;
+    if (n > 3) return;
+    img.dataset.retry = n;
+    setTimeout(() => { img.src = img.src.split("?")[0] + "?r=" + Date.now(); }, 1500 * n);
+  }, true);
+  document.addEventListener("load", e => { if (e.target instanceof HTMLImageElement) delete e.target.dataset.retry; }, true);
+
   /* ---------- Scroll reveal ---------- */
   const items = $$(".obs, [data-paint]");
   items.forEach(el => {
