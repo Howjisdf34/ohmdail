@@ -50,7 +50,8 @@
   --tape:#e2d2a2;          /* cinta de pintor (masking) */
   --tape-ink:#3b3220;
   --steel:#15161a;         /* herrería pintada de negro */
-  --paint-white:#efeee9;   /* pintura blanca de muros (igual en ambos temas) */
+  --paint-white:#efeee9;   /* pintura blanca: techo y mueble (igual en ambos temas) */
+  --paint-beige:#ddd3c4;   /* pintura beige de los muros */
   --wall-old:color-mix(in srgb,var(--muted) 24%,var(--surface));
   --wall-new:color-mix(in srgb,var(--accent) 16%,var(--surface));
   --radius:4px;
@@ -487,14 +488,14 @@ section{padding:104px 0}
 @keyframes wipe{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
 @keyframes wipeTxt{30%{opacity:0;transform:translateY(10px)}45%,62%{opacity:1;transform:none}80%,100%{opacity:0}}
 
-/* muestras de pintura: color de antes → blanco */
+/* muestras de pintura: color de antes → techo blanco (franja de arriba) y muros beige */
 .swatches{display:flex;flex-direction:column;gap:10px;margin-bottom:26px}
 .swatch{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:center;text-align:left;padding:10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);cursor:pointer;
   transition:border-color .25s,transform .35s var(--ease),box-shadow .35s,background .5s}
 .swatch:hover{border-color:var(--ink)}
 .swatch.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow);transform:translateX(6px)}
 .sw-chip{position:relative;width:64px;height:64px;border-radius:3px;overflow:hidden;background:linear-gradient(var(--c1) 0 62%,var(--c2) 62%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
-.sw-chip::after{content:"";position:absolute;inset:0;background:var(--paint-white);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);clip-path:polygon(100% 0,100% 100%,0 100%)}
+.sw-chip::after{content:"";position:absolute;inset:0;background:linear-gradient(var(--paint-white) 0 30%,var(--paint-beige) 30%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);clip-path:polygon(100% 0,100% 100%,0 100%)}
 .swatch.on .sw-chip::after{animation:chipPaint .8s var(--ease) both}
 @keyframes chipPaint{from{clip-path:polygon(100% 100%,100% 100%,100% 100%)}}
 .sw-name{display:block;font-family:"Archivo",sans-serif;font-weight:800;font-size:1.08rem;letter-spacing:-.01em;line-height:1.2}
@@ -948,7 +949,7 @@ body.eco .shot:hover img{transform:none}
         <div class="obra-stage obs">
           <div class="ba ba-wide" data-ba id="obraBA">
             <img class="ob-before" src="pictures/web/MuebleAntes.jpg" alt="Cuarto con mueble de concreto pintado de verde agua con bordes amarillos, antes" width="1600" height="1202" loading="lazy">
-            <img class="ba-after ob-after" src="pictures/web/MuebleDespues.jpg" alt="El mismo cuarto con el mueble y los muros pintados de blanco, después" width="1600" height="1202" loading="lazy">
+            <img class="ba-after ob-after" src="pictures/web/MuebleDespues.jpg" alt="El mismo cuarto con el mueble y el techo en blanco y los muros en beige, después" width="1600" height="1202" loading="lazy">
             <span class="ba-tag l mono">Antes</span><span class="ba-tag r mono">Después</span>
             <span class="ob-stamp mono" id="obStamp">18 oct → 23 oct</span>
             <div class="ba-handle"><span class="ba-knob"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
@@ -961,34 +962,34 @@ body.eco .shot:hover img{transform:none}
           <div class="swatches" role="group" aria-label="Elige un cuarto">
             <button class="swatch on" type="button" aria-pressed="true" style="--c1:#86cdb8;--c2:#e0b53c"
               data-before="pictures/web/MuebleAntes.jpg" data-before-alt="Cuarto con mueble de concreto pintado de verde agua con bordes amarillos, antes"
-              data-after="pictures/web/MuebleDespues.jpg" data-after-alt="El mismo cuarto con el mueble y los muros pintados de blanco, después"
-              data-stamp="18 oct → 23 oct" data-tags="Muros,Mueble,Pintura"
-              data-desc="Un mueble de concreto con el fondo verde agua y los bordes amarillos, igual que los muros. Quedó todo en blanco, parejo: mueble y paredes.">
+              data-after="pictures/web/MuebleDespues.jpg" data-after-alt="El mismo cuarto con el mueble y el techo en blanco y los muros en beige, después"
+              data-stamp="18 oct → 23 oct" data-tags="Muros,Techo,Mueble,Pintura"
+              data-desc="Un mueble de concreto con el fondo verde agua y los bordes amarillos, igual que los muros. El mueble y el techo quedaron en blanco y los muros en beige.">
               <span class="sw-chip" aria-hidden="true"></span>
-              <span class="sw-txt"><span class="sw-name">El mueble</span><span class="sw-colors mono">Verde y amarillo → Blanco</span></span>
+              <span class="sw-txt"><span class="sw-name">El mueble</span><span class="sw-colors mono">Verde y amarillo → Beige y blanco</span></span>
             </button>
             <button class="swatch" type="button" aria-pressed="false" style="--c1:#86cdb8;--c2:#86cdb8"
               data-before="pictures/web/ParedVerdeAntes.jpg" data-before-alt="Cuarto con muros verde agua, hoyos y manchas, antes"
-              data-after="pictures/web/ParedVerdeDespues.jpg" data-after-alt="El mismo cuarto con los muros resanados y pintados de blanco, después"
-              data-stamp="18 oct → 23 oct" data-tags="Resane,Pintura"
+              data-after="pictures/web/ParedVerdeDespues.jpg" data-after-alt="El mismo cuarto con los muros resanados y pintados de beige y el techo en blanco, después"
+              data-stamp="18 oct → 23 oct" data-tags="Resane,Muros,Techo,Pintura"
               data-detail="1"
-              data-desc="Muros verde agua con hoyos y manchas de humedad. Primero resané los hoyos y emparejé, luego pinté todo de blanco.">
+              data-desc="Muros verde agua con hoyos y manchas de humedad. Primero resané los hoyos y emparejé, luego pinté los muros de beige y el techo de blanco.">
               <span class="sw-chip" aria-hidden="true"></span>
-              <span class="sw-txt"><span class="sw-name">Cuarto verde</span><span class="sw-colors mono">Verde agua → Blanco</span></span>
+              <span class="sw-txt"><span class="sw-name">Cuarto verde</span><span class="sw-colors mono">Verde agua → Beige y blanco</span></span>
             </button>
             <button class="swatch" type="button" aria-pressed="false" style="--c1:#d885c3;--c2:#d885c3"
               data-before="pictures/web/ParedRosaAntes.jpg" data-before-alt="Cuarto con muros rosas llenos de manchas de humedad y escurridos, antes"
-              data-after="pictures/web/ParedRosaDespues.jpg" data-after-alt="El mismo cuarto con los muros limpios y pintados de blanco, después"
-              data-stamp="" data-tags="Manchas de humedad,Resane,Pintura"
-              data-desc="Manchas de humedad y escurridos por todo el muro, sobre todo arriba. Quedó limpio, parejo y en blanco.">
+              data-after="pictures/web/ParedRosaDespues.jpg" data-after-alt="El mismo cuarto con los muros limpios y pintados de beige y el techo en blanco, después"
+              data-stamp="" data-tags="Manchas de humedad,Muros,Techo,Pintura"
+              data-desc="Manchas de humedad y escurridos por todo el muro, sobre todo arriba. Quedó limpio y parejo: muros en beige y techo en blanco.">
               <span class="sw-chip" aria-hidden="true"></span>
-              <span class="sw-txt"><span class="sw-name">Cuarto rosa</span><span class="sw-colors mono">Rosa → Blanco</span></span>
+              <span class="sw-txt"><span class="sw-name">Cuarto rosa</span><span class="sw-colors mono">Rosa → Beige y blanco</span></span>
             </button>
           </div>
           <div class="ob-info" id="obInfo">
             <h3 id="obTitle">El mueble</h3>
-            <p id="obDesc">Un mueble de concreto con el fondo verde agua y los bordes amarillos, igual que los muros. Quedó todo en blanco, parejo: mueble y paredes.</p>
-            <ul class="ob-tags" id="obTags"><li class="mono">Muros</li><li class="mono">Mueble</li><li class="mono">Pintura</li></ul>
+            <p id="obDesc">Un mueble de concreto con el fondo verde agua y los bordes amarillos, igual que los muros. El mueble y el techo quedaron en blanco y los muros en beige.</p>
+            <ul class="ob-tags" id="obTags"><li class="mono">Muros</li><li class="mono">Techo</li><li class="mono">Mueble</li><li class="mono">Pintura</li></ul>
           </div>
           <button class="ob-detail" id="obDetail" type="button" data-cap="Cuarto verde · Así se veía de cerca" hidden>
             <img src="pictures/web/ParedVerdeDetalle.jpg" alt="Acercamiento del muro verde con hoyos y escurridos de humedad, antes" width="1600" height="1200" loading="lazy">

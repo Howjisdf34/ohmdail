@@ -128,7 +128,8 @@ Bloques, con comentarios `PARA PONER TUS FOTOS` / `OBRA COMPLETA` en el HTML:
 
 - **Obra completa (`#obra`):** varios cuartos de una misma casa (pared y mueble).
   Un solo comparador grande (`#obraBA`) y botones `.swatch` con forma de muestra
-  de pintura (color de antes `--c1/--c2` → blanco). Cada botón guarda sus fotos
+  de pintura (color de antes `--c1/--c2` → techo blanco y muros beige; el
+  mueble también quedó blanco). Cada botón guarda sus fotos
   y textos en `data-*`. Al cambiar de cuarto, un rodillo azul (`.ob-wipe`) barre
   la foto. Las fechas (`data-stamp`) salen del EXIF de las fotos originales.
 - **Comparador antes/después (`.ba`):** dos `<img>` (antes, luego `.ba-after`).
