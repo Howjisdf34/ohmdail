@@ -26,19 +26,8 @@
   function mq(q){ return !!(window.matchMedia && window.matchMedia(q).matches); }
   d.setAttribute("data-theme", get("tema") || (mq("(prefers-color-scheme: dark)") ? "dark" : "light"));
 
-  // Detección automática de equipos de gama baja / datos limitados
-  function equipoLimitado(){
-    try {
-      var con = navigator.connection || {};
-      if (con.saveData) return true;                               // "ahorro de datos" activo
-      if (con.effectiveType && /2g/.test(con.effectiveType)) return true;
-      if (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 2) return true;
-      if (typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 2) return true;
-    } catch(e){}
-    return false;
-  }
-  var saved = get("ahorro");                       // "1" / "0" si el usuario ya eligió
-  var eco = saved !== null ? saved === "1" : equipoLimitado();
+  // Modo ahorro: apagado por defecto; solo se enciende si el usuario lo eligió
+  var eco = get("ahorro") === "1";
   var reduce = mq("(prefers-reduced-motion: reduce)");
   d.className += " js" + (eco || reduce ? " no-intro" : " intro-on");
   window.OHM = { eco: eco };

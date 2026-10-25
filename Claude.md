@@ -84,10 +84,10 @@ nuevo de estas variables; no metas hex sueltos.
   recuerda la elección con `localStorage` envuelto en `try/catch` (no truena si
   el navegador lo bloquea).
 - **Modo ahorro ("Ahorro"):** botón que desactiva animaciones, la malla animada,
-  sombras y desenfoques, para celulares de gama baja. Se **enciende solo** si
-  detecta equipo limitado (`navigator.connection.saveData`, `effectiveType` 2g,
-  `deviceMemory <= 2`, `hardwareConcurrency <= 2`). También persiste en
-  `localStorage`. La clase que lo activa es `body.eco`.
+  sombras y desenfoques, para celulares de gama baja. **Por decisión de José
+  viene apagado por defecto** (antes se encendía solo al detectar equipo
+  limitado; ya no). Solo se activa si el usuario lo toca, y la elección persiste
+  en `localStorage` (`ahorro`). La clase que lo activa es `body.eco`.
 - Respeta `prefers-reduced-motion` de forma independiente (media query que anula
   animaciones).
 - Focus visible en teclado, `aria-label`s en botones, responsive con breakpoints
