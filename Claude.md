@@ -1,11 +1,13 @@
-# Ohmdail — Sitio web de trabajos independientes
+# Trabajos independientes (ohmdail.com) — Sitio web
 
 Contexto del proyecto para continuar el desarrollo. Deja este archivo en la raíz
 de la carpeta del proyecto; Claude Code lo lee automáticamente.
 
 ## Qué es
 
-Página web de una persona (José Ángel Hernández Amaya, marca **Ohmdail**) que
+Página web de una persona (José Ángel Hernández Amaya). El nombre que se muestra es
+**Trabajos independientes** (así dicen sus tarjetas de presentación); **Ohmdail
+es solo el dominio**, no lo uses como nombre o marca en la página) que
 ofrece servicios de mantenimiento del hogar por su cuenta en **Ciudad Lázaro
 Cárdenas, Michoacán, México**. El sitio muestra sus servicios y sus trabajos, y
 sirve para que los clientes lo contacten. Público: dueños de casa que llegan
@@ -42,7 +44,8 @@ Al final del `<script>` hay un objeto **`CONFIG`** con los datos editables:
 
 ```js
 const CONFIG = {
-  nombre:   "...",           // nombre o negocio
+  marca:    "Trabajos independientes", // nombre que se ve en el header
+  nombre:   "...",           // nombre o negocio (footer)
   ciudad:   "...",           // zona de servicio
   telefono: "521234567890",  // WhatsApp CON lada país. México = 52
   correo:   "..."            // correo (opcional)
@@ -90,35 +93,49 @@ nuevo de estas variables; no metas hex sueltos.
 - Focus visible en teclado, `aria-label`s en botones, responsive con breakpoints
   a 900px y 640px.
 
-## Animaciones
+## Animaciones (rediseño oct 2026)
 
-- Entrada del hero: líneas con reveal (clip) + `fade-up`, con la clase `loaded`
-  que se agrega en `requestAnimationFrame`.
-- Cinta ("marquee") de servicios en movimiento continuo.
-- Reveal al hacer scroll vía `IntersectionObserver`: elementos con clase `.obs`
-  reciben `.in`.
-- Tarjetas de servicio: al pasar el cursor se "pintan" de azul (pseudo-elemento
-  `::after` que sube con `translateY`).
+- **Intro de carga (`#intro`, ~3 s):** tres rodillos (`<symbol id="roller">`)
+  pintan la pantalla de azul en franjas, aparece "Trabajos independientes" y la cortina sube
+  escurriendo pintura (`.in-drips`). Es CSS puro; el JS solo la salta (clic,
+  tecla, scroll) y la quita del DOM. Se muestra en cada carga. No sale con
+  `body.eco` ni `prefers-reduced-motion`: el `<script>` del `<head>` pone
+  `html.no-intro` antes de pintar.
+- **Hero:** líneas con reveal + `fade-up` y un brochazo azul detrás de "abajo."
+  (`.swash`). Arranca con `body.loaded` cuando sube la cortina.
+- **Casa animada (`#house`):** SVG que se arregla de arriba abajo:
+  trazos → impermeabilización (`s1`) → resane (`s2`) → pintura con rodillo
+  (`s3`) → mosquitero (`s4`) → herrería (`s5`) → `done` (sale el sol). Tiempos
+  en `STEPS` del JS. Botón "Ver otra vez". En modo calma salta a `finishHouse()`.
+- Cintas de pintor (`.tapes`) cruzadas en movimiento continuo.
+- Scroll reveal vía `IntersectionObserver` (`.obs` → `.in`, con escalonado `--d`).
+- Tarjetas de servicio: al pasar el cursor se pintan de arriba abajo con escurridos
+  y el ícono se redibuja.
+- Proceso: la línea entre pasos se pinta conforme haces scroll (`--p`).
+- Footer: "Trabajos independientes" en contorno que se rellena de azul al aparecer.
+- Cambio de tema con View Transitions (círculo desde el botón) si el navegador
+  lo soporta.
 
 Todas las animaciones se apagan bajo `body.eco` y bajo `prefers-reduced-motion`.
 Si agregas animaciones nuevas, respeta esos dos apagados.
 
 ## Galería de trabajos
 
-6 recuadros `.shot` con placeholder (`.ph`, malla + ícono). **Para poner fotos
-reales:** dentro de cada `.shot`, reemplaza el `<div class="ph">...</div>` por
-`<img src="foto.jpg" alt="descripción">`. Relación de aspecto 4/5. Hay un
-comentario `PARA PONER TUS FOTOS` en el HTML que lo indica.
+Fotos optimizadas en `pictures/web/` (las originales en `pictures/` no se suben;
+ver `.gitignore`). Dos tipos de bloque, con un comentario `PARA PONER TUS FOTOS`
+en el HTML:
+
+- **Comparador antes/después (`.ba`):** dos `<img>` (antes, luego `.ba-after`).
+  Se arrastra con el dedo/mouse o con teclado (range oculto). Solo sirve con
+  pares tomados desde el mismo ángulo.
+- **Galería (`.shot`):** `<figure>` con botón que abre el visor (`<dialog id="lb">`).
+  `class="shot wide"` para fotos horizontales.
 
 ## Pendientes / próximos pasos sugeridos
 
-- Sustituir los placeholders de la galería por fotos reales de trabajos.
-- Confirmar que `CONFIG` tenga nombre, ciudad, teléfono (con lada 52) y correo.
-- Publicar en `ohmdail.com` / `www.ohmdail.com` (hosting estático; solo suben
-  `index.html` y las fotos). Configurar DNS con el proveedor del dominio.
-- Opcional: nota visible tipo "La visita y el presupuesto son gratis, sin
-  compromiso" junto al botón principal.
-- Opcional: sección de reseñas/testimonios de clientes.
+- Agregar más fotos de trabajos (idealmente pares antes/después del mismo ángulo).
+- Publicar en `ohmdail.com` / `www.ohmdail.com` (Dockerfile para Coolify incluido).
+- Opcional: sección de reseñas/testimonios de clientes (solo reales).
 
 ## Convenciones al editar
 

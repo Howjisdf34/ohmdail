@@ -3,17 +3,47 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Trabajos independientes — Pintura, impermeabilización y más</title>
-<meta name="description" content="Pintura, resane de grietas, impermeabilización, mosquiteros y mantenimiento general. Presupuesto sin costo. Contáctame por WhatsApp." />
-
-<!-- ============================================================= -->
-<!--  CONFIGURA TUS DATOS AQUÍ  (busca "CONFIG" también en el JS)   -->
-<!--  Cambia el nombre, ciudad, teléfono y correo por los tuyos.    -->
-<!-- ============================================================= -->
+<title>Trabajos independientes — Pintura, impermeabilización y herrería en Lázaro Cárdenas</title>
+<meta name="description" content="Pintura, resane de grietas, impermeabilización, mosquiteros a medida y herrería en Lázaro Cárdenas, Mich. La visita y el presupuesto son gratis. Agenda por WhatsApp." />
+<meta name="theme-color" content="#182bc4" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://ohmdail.com/" />
+<meta property="og:title" content="Trabajos independientes — Cuido tu casa de arriba abajo" />
+<meta property="og:description" content="Pintura, impermeabilización, resanes, mosquiteros y herrería en Lázaro Cárdenas. Visita y presupuesto sin costo." />
+<meta property="og:image" content="https://ohmdail.com/pictures/web/herreria_despues.jpg" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23182bc4'/%3E%3Cpath d='M8 8h16v16H8z' fill='none' stroke='white' stroke-width='2'/%3E%3Cpath d='M8 13.3h16M8 18.7h16M13.3 8v16M18.7 8v16' stroke='white' stroke-opacity='.6'/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>
+/* Corre antes de pintar la página: tema, modo ahorro y si se muestra la intro.
+   Los datos editables (CONFIG) están al final, en el otro <script>. */
+(function () {
+  var d = document.documentElement;
+  function get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function mq(q){ return !!(window.matchMedia && window.matchMedia(q).matches); }
+  d.setAttribute("data-theme", get("tema") || (mq("(prefers-color-scheme: dark)") ? "dark" : "light"));
+
+  // Detección automática de equipos de gama baja / datos limitados
+  function equipoLimitado(){
+    try {
+      var con = navigator.connection || {};
+      if (con.saveData) return true;                               // "ahorro de datos" activo
+      if (con.effectiveType && /2g/.test(con.effectiveType)) return true;
+      if (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 2) return true;
+      if (typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 2) return true;
+    } catch(e){}
+    return false;
+  }
+  var saved = get("ahorro");                       // "1" / "0" si el usuario ya eligió
+  var eco = saved !== null ? saved === "1" : equipoLimitado();
+  var reduce = mq("(prefers-reduced-motion: reduce)");
+  d.className += " js" + (eco || reduce ? " no-intro" : " intro-on");
+  window.OHM = { eco: eco };
+})();
+</script>
 
 <style>
 :root{
@@ -28,8 +58,15 @@
   --eco:#1f7a4d;
   --shadow:0 1px 0 rgba(0,0,0,.04), 0 18px 40px -24px rgba(20,22,40,.45);
   --mesh:rgba(22,23,27,.10);
+  --tape:#e2d2a2;          /* cinta de pintor (masking) */
+  --tape-ink:#3b3220;
+  --steel:#15161a;         /* herrería pintada de negro */
+  --wall-old:color-mix(in srgb,var(--muted) 24%,var(--surface));
+  --wall-new:color-mix(in srgb,var(--accent) 16%,var(--surface));
   --radius:4px;
   --maxw:1180px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ease-io:cubic-bezier(.7,0,.3,1);
 }
 [data-theme="dark"]{
   --bg:#131418;
@@ -43,10 +80,15 @@
   --eco:#3ec77f;
   --shadow:0 1px 0 rgba(255,255,255,.02), 0 24px 50px -28px rgba(0,0,0,.7);
   --mesh:rgba(236,234,227,.09);
+  --tape:#cbb784;
+  --tape-ink:#2a2315;
+  --steel:#0a0b0d;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
+/* bloquear scroll en <body> (no en <html>) para que el header sticky siga funcionando */
+.intro-on body,.menu-on body{overflow:hidden}
 body{
   background:var(--bg);
   color:var(--ink);
@@ -58,13 +100,69 @@ body{
 }
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
+button{font:inherit;color:inherit}
 
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
 .mono{font-family:"IBM Plex Mono",monospace;font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
 .eyebrow{color:var(--accent)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
 /* ---------- focus / a11y ---------- */
 :focus-visible{outline:2.5px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+/* ================= INTRO: el rodillo pinta la pantalla ================= */
+#intro{display:none}
+.js #intro{
+  display:block;position:fixed;inset:0;z-index:100;cursor:pointer;
+  background:var(--bg);color:var(--accent-ink);
+  animation:lift .9s var(--ease-io) 2.35s forwards;
+  --rh:46.6vh;              /* alto del rodillo (cilindro = alto de una franja) */
+  --rw:15.9vh;
+}
+.no-intro #intro{display:none}
+#intro.skip{animation:lift .75s var(--ease-io) forwards}
+@keyframes lift{to{transform:translateY(calc(-100% - 26vh));visibility:hidden}}
+
+.in-mesh{position:absolute;inset:0;
+  background-image:linear-gradient(var(--mesh) 1px,transparent 1px),linear-gradient(90deg,var(--mesh) 1px,transparent 1px);
+  background-size:15px 15px;opacity:0;animation:fadeIn .5s ease forwards}
+@keyframes fadeIn{to{opacity:1}}
+
+.in-band{position:absolute;left:0;width:100%;height:34.6%;
+  background:
+    repeating-linear-gradient(180deg,transparent 0 3px,rgba(0,0,0,.06) 3px 4px,transparent 4px 9px,rgba(255,255,255,.06) 9px 10px),
+    var(--accent);
+  transform:scaleX(0);transform-origin:left;
+  animation:band .78s linear forwards}
+.in-band.b1{top:0;animation-delay:.12s}
+.in-band.b2{top:33%;transform-origin:right;animation-delay:.6s}
+.in-band.b3{top:66%;animation-delay:1.08s}
+@keyframes band{0%,14%{transform:scaleX(0)}86%,100%{transform:scaleX(1)}}
+
+.in-roll{position:absolute;left:0;width:0;height:var(--rh);animation:rollR .78s linear forwards;transform:translateX(-30vw)}
+.in-roll svg{position:absolute;top:0;height:100%;width:var(--rw);left:calc(var(--rw) * -.793);overflow:visible}
+.in-roll.r1{top:0;animation-delay:.12s}
+.in-roll.r2{top:33%;animation-name:rollL;animation-delay:.6s;transform:translateX(130vw)}
+.in-roll.r2 svg{transform:scaleX(-1);left:calc(var(--rw) * -.207)}
+.in-roll.r3{top:66%;animation-delay:1.08s}
+@keyframes rollR{0%{transform:translateX(-16vw)}14%{transform:translateX(0)}86%{transform:translateX(100vw)}100%{transform:translateX(116vw)}}
+@keyframes rollL{0%{transform:translateX(116vw)}14%{transform:translateX(100vw)}86%{transform:translateX(0)}100%{transform:translateX(-16vw)}}
+
+.in-center{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;text-align:center;padding:0 20px;pointer-events:none}
+.in-word{font-family:"Archivo",sans-serif;font-weight:900;font-size:clamp(2.3rem,10.4vw,8rem);line-height:.92;letter-spacing:-.04em}
+.in-word > span{display:block;overflow:hidden;padding:0 .04em .07em}
+.in-word > span > span{display:block;transform:translateY(108%);animation:rise .8s var(--ease) forwards;animation-delay:calc(1.5s + var(--i) * 120ms)}
+@keyframes rise{to{transform:none}}
+.in-tag{margin-top:14px;opacity:0;animation:fadeIn .6s ease 1.95s forwards;color:color-mix(in srgb,var(--accent-ink) 80%,transparent)}
+.in-meta{position:absolute;left:24px;right:24px;bottom:22px;display:flex;justify-content:space-between;gap:12px;opacity:0;animation:fadeIn .5s ease 1.7s forwards;color:color-mix(in srgb,var(--accent-ink) 70%,transparent)}
+
+.in-drips{position:absolute;left:0;right:0;top:100%;height:26vh;pointer-events:none}
+.in-drips i{position:absolute;top:-2px;left:var(--x);width:var(--w);height:var(--h);
+  background:var(--accent);border-radius:0 0 999px 999px;
+  transform:scaleY(0);transform-origin:top;animation:drip 1s var(--ease) 2.25s forwards}
+.in-drips i::after{content:"";position:absolute;left:50%;bottom:-3px;width:130%;aspect-ratio:1;border-radius:50%;background:inherit;transform:translateX(-50%)}
+#intro.skip .in-drips i{animation-delay:0s}
+@keyframes drip{to{transform:scaleY(1)}}
 
 /* ---------- header ---------- */
 header{
@@ -72,17 +170,23 @@ header{
   background:color-mix(in srgb,var(--bg) 82%,transparent);
   backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
-  transition:background .5s ease,border-color .5s ease;
+  transition:background .5s ease,border-color .5s ease,transform .45s var(--ease);
 }
+header.hide{transform:translateY(-100%)}
+.progress{position:absolute;left:0;bottom:-1px;width:100%;height:2px;background:var(--accent);transform-origin:left;transform:scaleX(var(--sp,0))}
 .nav{display:flex;align-items:center;justify-content:space-between;height:66px}
-.brand{display:flex;align-items:center;gap:11px;font-family:"Archivo",sans-serif;font-weight:900;font-size:16px;letter-spacing:-.01em}
+.brand{display:flex;align-items:center;gap:11px;line-height:1.1;font-family:"Archivo",sans-serif;font-weight:900;font-size:17px;letter-spacing:-.01em}
 .logo{width:30px;height:30px;border:2px solid var(--ink);border-radius:3px;position:relative;flex:0 0 auto;overflow:hidden}
 .logo::before{content:"";position:absolute;inset:0;
   background-image:linear-gradient(var(--ink) 1.4px,transparent 1.4px),linear-gradient(90deg,var(--ink) 1.4px,transparent 1.4px);
   background-size:6px 6px;opacity:.5}
+.logo::after{content:"";position:absolute;inset:0;background:var(--accent);transform:translateY(101%);transition:transform .5s var(--ease)}
+.brand:hover .logo::after{transform:translateY(55%)}
 .nav-links{display:flex;gap:28px;align-items:center}
-.nav-links a{font-size:14px;color:var(--muted);transition:color .2s}
+.nav-links a{font-size:14px;color:var(--muted);transition:color .2s;position:relative}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .35s var(--ease)}
 .nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{transform:scaleX(1);transform-origin:left}
 .nav-tools{display:flex;gap:10px;align-items:center}
 .iconbtn{
   width:40px;height:40px;border:1px solid var(--line);background:var(--surface);
@@ -92,14 +196,49 @@ header{
 .iconbtn:hover{border-color:var(--ink)}
 .iconbtn:active{transform:scale(.94)}
 .iconbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.eco-btn{width:auto;padding:0 14px;gap:8px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.eco-btn{width:auto;padding:0 14px;gap:8px;display:flex;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .eco-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .25s,box-shadow .25s}
 body.eco .eco-btn{border-color:var(--eco);color:var(--eco)}
 body.eco .eco-btn .dot{background:var(--eco);box-shadow:0 0 0 3px color-mix(in srgb,var(--eco) 25%,transparent)}
 .menu-toggle{display:none}
+.menu-toggle line{transform-box:fill-box;transform-origin:center;transition:transform .35s var(--ease),opacity .2s}
+.menu-on .menu-toggle .l1{transform:translateY(6px) rotate(45deg)}
+.menu-on .menu-toggle .l2{opacity:0}
+.menu-on .menu-toggle .l3{transform:translateY(-6px) rotate(-45deg)}
+
+/* menú móvil */
+.mnav{position:fixed;inset:0;z-index:45;background:var(--accent);color:var(--accent-ink);
+  display:flex;flex-direction:column;justify-content:center;padding:90px 28px 40px;gap:6px;
+  clip-path:circle(0% at calc(100% - 44px) 33px);visibility:hidden;
+  transition:clip-path .65s var(--ease-io),visibility 0s .65s}
+.mnav.open{clip-path:circle(150% at calc(100% - 44px) 33px);visibility:visible;transition:clip-path .65s var(--ease-io)}
+.mnav a{font-family:"Archivo",sans-serif;font-weight:900;font-size:clamp(2.4rem,11vw,3.4rem);letter-spacing:-.03em;line-height:1.1;
+  opacity:0;transform:translateY(24px);transition:opacity .4s,transform .5s var(--ease)}
+.mnav.open a{opacity:1;transform:none;transition-delay:calc(.25s + var(--i) * 70ms)}
+.mnav .mono{margin-top:28px;color:color-mix(in srgb,var(--accent-ink) 75%,transparent)}
+
+/* ---------- botones ---------- */
+.btn{
+  position:relative;overflow:hidden;isolation:isolate;
+  font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:15px;
+  padding:14px 26px;border-radius:var(--radius);border:1px solid var(--ink);
+  cursor:pointer;display:inline-flex;align-items:center;gap:9px;
+  transition:transform .18s ease,background .25s,color .25s,border-color .25s;
+}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn-primary::before{content:"";position:absolute;inset:-2px;z-index:-1;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);
+  transform:translateX(-110%);transition:transform .7s var(--ease)}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-primary:hover::before{transform:translateX(110%)}
+.btn-ghost{background:transparent;color:var(--ink)}
+.btn-ghost::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--ink);transform:scaleY(0);transform-origin:bottom;transition:transform .4s var(--ease)}
+.btn-ghost:hover{color:var(--bg);transform:translateY(-2px)}
+.btn-ghost:hover::before{transform:scaleY(1)}
 
 /* ---------- hero ---------- */
-.hero{position:relative;padding:96px 0 74px;overflow:hidden}
+.hero{position:relative;padding:72px 0 92px;overflow:hidden}
 .hero-mesh{
   position:absolute;inset:0;z-index:0;pointer-events:none;
   background-image:linear-gradient(var(--mesh) 1px,transparent 1px),linear-gradient(90deg,var(--mesh) 1px,transparent 1px);
@@ -110,152 +249,334 @@ body.eco .eco-btn .dot{background:var(--eco);box-shadow:0 0 0 3px color-mix(in s
 }
 @keyframes drift{to{background-position:15px 15px}}
 .hero .wrap{position:relative;z-index:1}
+.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:60px;align-items:center}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:24px}
 .hero-eyebrow .tick{width:26px;height:1px;background:var(--accent)}
 h1{
   font-family:"Archivo",sans-serif;font-weight:900;
-  font-size:clamp(2.6rem,8.5vw,6rem);line-height:.96;letter-spacing:-.03em;
-  max-width:14ch;
+  font-size:clamp(2.7rem,5.4vw,4.9rem);line-height:.96;letter-spacing:-.03em;
 }
-h1 .paint{color:var(--accent);position:relative;white-space:nowrap}
-.hero-sub{margin:28px 0 36px;max-width:52ch;font-size:clamp(1rem,2.4vw,1.22rem);color:var(--muted)}
+.swash{position:relative;display:inline-block;isolation:isolate;color:var(--accent);padding:0 .14em;margin-left:-.14em;transition:color .35s ease 1.05s}
+.swash::before{content:"";position:absolute;z-index:-1;left:0;right:-.04em;top:.14em;bottom:.04em;
+  background:repeating-linear-gradient(180deg,transparent 0 3px,rgba(255,255,255,.09) 3px 5px),var(--accent);
+  border-radius:.06em .3em .1em .26em;
+  transform:rotate(-1.8deg) scaleX(0);transform-origin:left;transition:transform .75s var(--ease-io) .8s}
+.loaded .swash{color:var(--accent-ink)}
+.loaded .swash::before{transform:rotate(-1.8deg) scaleX(1)}
+.hero-sub{margin:28px 0 34px;max-width:50ch;font-size:clamp(1rem,2.2vw,1.18rem);color:var(--muted)}
 .hero-sub strong{color:var(--ink);font-weight:600}
 .cta-row{display:flex;gap:14px;flex-wrap:wrap}
-.btn{
-  font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:15px;
-  padding:14px 26px;border-radius:var(--radius);border:1px solid var(--ink);
-  cursor:pointer;display:inline-flex;align-items:center;gap:9px;
-  transition:transform .18s ease,background .25s,color .25s,border-color .25s;
-}
-.btn svg{width:18px;height:18px}
-.btn-primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.btn-primary:hover{transform:translateY(-2px)}
-.btn-ghost{background:transparent;color:var(--ink)}
-.btn-ghost:hover{background:var(--ink);color:var(--bg);transform:translateY(-2px)}
+.free-note{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:14px}
+.free-note span{display:inline-flex;align-items:center;gap:7px}
+.free-note svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 
 /* animated reveal for hero lines */
-.reveal-line{display:block;overflow:hidden}
-.reveal-line > span{display:block;transform:translateY(110%);transition:transform .9s cubic-bezier(.16,1,.3,1)}
+.reveal-line{display:block;overflow:hidden;padding-bottom:.07em;margin-bottom:-.07em}
+.reveal-line > span{display:block}
+.js .reveal-line > span{transform:translateY(112%);transition:transform 1s var(--ease)}
 .loaded .reveal-line > span{transform:translateY(0)}
-.loaded .reveal-line:nth-child(2) > span{transition-delay:.08s}
-.loaded .reveal-line:nth-child(3) > span{transition-delay:.16s}
-.fade-up{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
-.loaded .hero-sub.fade-up{opacity:1;transform:none;transition-delay:.4s}
-.loaded .cta-row.fade-up{opacity:1;transform:none;transition-delay:.52s}
+.loaded .reveal-line:nth-child(2) > span{transition-delay:.09s}
+.loaded .reveal-line:nth-child(3) > span{transition-delay:.18s}
+.js .fade-up{opacity:0;transform:translateY(18px);transition:opacity .8s ease,transform .8s var(--ease)}
+.loaded .fade-up{opacity:1;transform:none}
+.loaded .hero-eyebrow.fade-up{transition-delay:.05s}
+.loaded .hero-sub.fade-up{transition-delay:.42s}
+.loaded .cta-row.fade-up{transition-delay:.54s}
+.loaded .free-note.fade-up{transition-delay:.66s}
+.loaded .house-wrap.fade-up{transition-delay:.3s}
 
-/* ---------- marquee ---------- */
-.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--surface-2);transition:background .5s}
-.marquee-track{display:flex;gap:0;width:max-content;animation:scroll 34s linear infinite}
-.marquee-track span{font-family:"Archivo",sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em;padding:16px 30px;color:var(--muted);display:flex;align-items:center;gap:30px;white-space:nowrap}
-.marquee-track span::after{content:"";width:7px;height:7px;background:var(--accent);border-radius:50%}
+/* ---------- casa animada ---------- */
+.house-wrap{position:relative}
+.house-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:14px 14px 16px;transition:background .5s,border-color .5s,transform .5s var(--ease)}
+.hc-top{display:flex;justify-content:flex-end;align-items:center;gap:10px;color:var(--muted);padding:2px 4px 10px}
+.hc-state{display:inline-flex;align-items:center;gap:8px}
+.hc-state::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.3s ease-in-out infinite}
+.finished .hc-state{color:var(--eco)}
+.finished .hc-state::before{animation:none;background:var(--eco)}
+@keyframes pulse{50%{opacity:.25}}
+.hc-stage{position:relative;border-radius:var(--radius);overflow:hidden;background:var(--surface-2);border:1px solid var(--line)}
+.hc-stage::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(var(--mesh) 1px,transparent 1px),linear-gradient(90deg,var(--mesh) 1px,transparent 1px);
+  background-size:12px 12px;animation:drift 18s linear infinite;opacity:.8}
+.house{position:relative;display:block;width:100%;height:auto}
+.hc-foot{display:flex;flex-direction:column;gap:12px;padding:14px 4px 0}
+.hc-status{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:22px}
+.hc-status p{color:var(--ink);font-size:11.5px}
+.replay{background:none;border:0;cursor:pointer;color:var(--accent);display:inline-flex;align-items:center;gap:6px;padding:4px 0;white-space:nowrap}
+.replay svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .5s var(--ease)}
+.replay:hover svg{transform:rotate(-270deg)}
+.checks{display:flex;flex-wrap:wrap;gap:6px;list-style:none}
+.check{display:inline-flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;transition:background .35s,color .35s,border-color .35s,transform .35s var(--ease)}
+.check svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.check svg circle{stroke-width:1.6}
+.check svg path{stroke-dasharray:1 1;stroke-dashoffset:1;transition:stroke-dashoffset .4s ease .1s}
+.check.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);transform:translateY(-2px)}
+.check.on svg path{stroke-dashoffset:0}
+
+/* sello giratorio */
+.stamp{position:absolute;z-index:2;top:-44px;left:-44px;width:112px;height:112px;border-radius:50%;
+  background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:var(--shadow)}
+.stamp svg.ring{position:absolute;inset:0;width:100%;height:100%;animation:spin 16s linear infinite}
+.stamp text{fill:currentColor;font-family:"IBM Plex Mono",monospace;font-size:9.6px;font-weight:500;letter-spacing:.08em}
+.stamp .core{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* piezas del dibujo */
+.house .o{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.house .thin{stroke-width:1.2}
+.js .house .o{stroke-dasharray:1 1;stroke-dashoffset:1}
+.house.draw .o{stroke-dashoffset:0;transition:stroke-dashoffset 1.1s var(--ease-io) calc(var(--i,0) * 60ms)}
+.js .house .fi{opacity:0}
+.house.draw .fi{opacity:1;transition:opacity .7s ease .55s}
+.house .sc{transform-box:fill-box}
+.house .slab{fill:var(--wall-old)}
+.house .wall-old{fill:var(--wall-old)}
+.house .stain{fill:var(--muted);opacity:.32}
+.house .glass{fill:color-mix(in srgb,var(--accent) 12%,var(--bg))}
+.house .door-old{fill:color-mix(in srgb,var(--muted) 55%,var(--surface))}
+.house .rust{fill:var(--muted);opacity:.55}
+.house .tank{fill:var(--steel)}
+.house .cloud-fill{fill:var(--surface)}
+.house .coat{fill:var(--accent);transform-origin:left;transform:scaleX(0)}
+.house.s1 .coat{transform:scaleX(1);transition:transform .7s var(--ease-io)}
+.house .patch{fill:none;stroke:var(--surface);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:1}
+.house.s2 .patch{stroke-dashoffset:0;transition:stroke-dashoffset .6s var(--ease-io)}
+.house .strip{fill:var(--wall-new);transform-origin:top;transform:scaleY(0)}
+.house.s3 .strip{transform:scaleY(1);transition:transform .32s linear calc(var(--i) * .35s)}
+.house .mesh-fill{fill:url(#meshPat);transform-origin:top;transform:scaleY(0)}
+.house.s4 .mesh-fill{transform:scaleY(1);transition:transform .6s var(--ease-io)}
+.house .door-new{fill:var(--steel);transform-origin:top;transform:scaleY(0)}
+.house.s5 .door-new{transform:scaleY(1);transition:transform .55s var(--ease-io)}
+.house .shine{fill:url(#shineGrad)}
+.house.s5 .shine{transform:translateX(150px);transition:transform .9s ease .45s}
+.house .h-roller{opacity:0}
+.house.s3 .h-roller{animation:hroll 1.4s linear forwards}
+@keyframes hroll{
+  0%{opacity:1;transform:translate(105px,140px)}
+  23%{transform:translate(105px,350px)}
+  25%{transform:translate(175px,140px)}
+  48%{transform:translate(175px,350px)}
+  50%{transform:translate(245px,140px)}
+  73%{transform:translate(245px,350px)}
+  75%{transform:translate(315px,140px)}
+  97%{opacity:1;transform:translate(315px,350px)}
+  100%{opacity:0;transform:translate(315px,350px)}
+}
+.house .drop{stroke:var(--accent);stroke-width:1.6;stroke-linecap:round;animation:rain .75s linear infinite;animation-delay:calc(var(--i) * -.13s)}
+@keyframes rain{0%{transform:translateY(-12px);opacity:0}25%{opacity:.85}100%{transform:translateY(22px);opacity:0}}
+.house .cloud,.house .rain{transition:transform 1.2s var(--ease),opacity 1s ease}
+.house .sun{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform 1.1s var(--ease)}
+.house .sun circle{fill:var(--accent)}
+.house .rays{stroke:var(--accent);stroke-width:2.2;stroke-linecap:round;transform-box:fill-box;transform-origin:center;animation:spin 14s linear infinite}
+.house.done .cloud{transform:translateX(-70px);opacity:0}
+.house.done .rain{opacity:0}
+.house.done .sun{opacity:1;transform:none}
+.house.reset *{transition:none !important;animation:none !important}
+
+/* ---------- cintas de pintor ---------- */
+.tapes{position:relative;height:150px;overflow:hidden;margin:-18px 0}
+.tape{position:absolute;left:-6%;width:112%;top:50%;padding:13px 0;box-shadow:0 8px 18px -10px rgba(0,0,0,.4)}
+.tape::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 1px,transparent 1px 5px)}
+.tape.t1{background:var(--tape);color:var(--tape-ink);transform:translateY(-50%) rotate(-3deg)}
+.tape.t2{background:var(--accent);color:var(--accent-ink);transform:translateY(-50%) rotate(2.2deg)}
+.tape-track{display:flex;width:max-content;animation:scroll 40s linear infinite}
+.tape.t2 .tape-track{animation-direction:reverse;animation-duration:48s}
+.tape-track span{font-family:"Archivo",sans-serif;font-weight:800;font-size:15px;letter-spacing:.05em;text-transform:uppercase;padding:0 22px;display:flex;align-items:center;gap:44px;white-space:nowrap}
+.tape-track span::after{content:"";width:7px;height:7px;transform:rotate(45deg);background:currentColor;opacity:.6}
 @keyframes scroll{to{transform:translateX(-50%)}}
 
 /* ---------- section frame ---------- */
-section{padding:96px 0}
+section{padding:104px 0}
 .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:52px;flex-wrap:wrap}
-.sec-head h2{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(1.9rem,4.5vw,3rem);letter-spacing:-.02em;line-height:1.02;max-width:16ch}
-.sec-head p{color:var(--muted);max-width:34ch}
+.sec-head h2,.contact-left h2{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(1.9rem,4.6vw,3.2rem);letter-spacing:-.025em;line-height:1.02;max-width:16ch}
+.sec-head p{color:var(--muted);max-width:36ch}
+.kicker{display:block;margin-bottom:14px}
 
 /* scroll reveal utility */
-.obs{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1)}
+.js .obs{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .9s var(--ease);transition-delay:calc(var(--d,0) * 90ms)}
 .obs.in{opacity:1;transform:none}
 
-/* ---------- services ---------- */
+/* ---------- servicios ---------- */
 .services{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-.svc{position:relative;background:var(--surface);padding:34px 30px 38px;min-height:230px;display:flex;flex-direction:column;overflow:hidden;transition:transform .25s}
-.svc::after{content:"";position:absolute;left:0;right:0;bottom:0;top:0;background:var(--accent);transform:translateY(101%);transition:transform .5s cubic-bezier(.16,1,.3,1);z-index:0}
-.svc:hover::after{transform:translateY(0)}
-.svc > *{position:relative;z-index:1;transition:color .35s}
-.svc:hover, .svc:focus-within{color:var(--accent-ink)}
-.svc:hover .svc-num,.svc:hover .svc-desc{color:color-mix(in srgb,var(--accent-ink) 82%,transparent)}
+.svc{position:relative;background:var(--surface);padding:34px 30px 38px;min-height:250px;display:flex;flex-direction:column;overflow:hidden;outline-offset:-4px;transition:background .5s}
+/* la pintura baja con escurridos */
+.svc::after{content:"";position:absolute;left:0;right:0;top:0;height:calc(100% + 46px);z-index:0;pointer-events:none;
+  background:
+    linear-gradient(var(--accent),var(--accent)) top/100% calc(100% - 45px) no-repeat,
+    radial-gradient(9px 30px at 22px 0,var(--accent) 96%,transparent) 0 100%/96px 46px repeat-x,
+    radial-gradient(6px 17px at 58px 0,var(--accent) 96%,transparent) 0 100%/96px 46px repeat-x,
+    radial-gradient(7px 40px at 80px 0,var(--accent) 96%,transparent) 0 100%/96px 46px repeat-x;
+  transform:translateY(calc(-100% - 2px));transition:transform .8s var(--ease)}
+.svc:hover::after,.svc:focus-visible::after{transform:translateY(0)}
+.svc > *{position:relative;z-index:1;transition:color .3s ease .12s}
+.svc:hover,.svc:focus-visible{color:var(--accent-ink)}
+.svc:hover .svc-num,.svc:hover .svc-desc,.svc:focus-visible .svc-num,.svc:focus-visible .svc-desc{color:color-mix(in srgb,var(--accent-ink) 82%,transparent)}
 .svc-num{color:var(--muted);margin-bottom:auto}
-.svc-ico{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin:14px 0 16px}
+.svc-ico{width:36px;height:36px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin:16px 0 16px}
+.svc-ico *{stroke-dasharray:1 1;stroke-dashoffset:0}
+.svc:hover .svc-ico *,.svc:focus-visible .svc-ico *{animation:redraw 1s var(--ease-io) both .1s}
+@keyframes redraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 .svc h3{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.32rem;letter-spacing:-.01em;margin-bottom:9px}
 .svc-desc{color:var(--muted);font-size:.95rem;line-height:1.5}
 
-/* ---------- trabajos / galería ---------- */
-.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.shot{
-  position:relative;aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;
-  border:1px solid var(--line);background:var(--surface-2);
-}
-.shot img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.16,1,.3,1)}
+/* ---------- proceso ---------- */
+.process{background:var(--surface-2);transition:background .5s}
+.steps{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:28px;list-style:none}
+.track{position:absolute;top:27px;left:28px;right:calc((100% - 84px) / 4 - 28px);height:2px;background:var(--line)}
+.track i{position:absolute;inset:0;background:var(--accent);transform-origin:left;transform:scaleX(var(--p,0))}
+.step{position:relative}
+.step .n{position:relative;width:56px;height:56px;border-radius:50%;border:2px solid var(--line);background:var(--surface-2);
+  display:grid;place-items:center;font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:14px;color:var(--muted);margin-bottom:22px;
+  transition:background .4s,border-color .4s,color .4s,transform .5s var(--ease)}
+.step.on .n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);transform:scale(1.08)}
+.step h3{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:8px;letter-spacing:-.01em}
+.step p{color:var(--muted);font-size:.95rem;line-height:1.5;max-width:28ch}
+.step .free{display:inline-block;justify-self:start;margin-top:10px;padding:3px 8px;border-radius:99px;background:var(--accent);color:var(--accent-ink)}
+
+/* ---------- trabajos ---------- */
+.ba-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.ba-fig figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px}
+.ba-fig figcaption b{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.05rem}
+.ba-fig figcaption span{color:var(--muted)}
+.ba{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:var(--radius);border:1px solid var(--line);background:var(--surface-2);
+  touch-action:pan-y;cursor:ew-resize;user-select:none;-webkit-user-select:none;--pos:50%}
+.ba:focus-within{outline:2.5px solid var(--accent);outline-offset:3px}
+.ba img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.ba-after{clip-path:inset(0 0 0 var(--pos))}
+.ba-handle{position:absolute;top:0;bottom:0;left:var(--pos);width:0;pointer-events:none}
+.ba-handle::before{content:"";position:absolute;top:0;bottom:0;left:-1.5px;width:3px;background:var(--accent-ink);box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.ba-knob{position:absolute;top:50%;left:0;width:54px;height:54px;border-radius:50%;transform:translate(-50%,-50%);
+  background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 8px 24px -6px rgba(0,0,0,.5);
+  transition:transform .3s var(--ease)}
+.ba-knob svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ba.dragging .ba-knob,.ba:hover .ba-knob{transform:translate(-50%,-50%) scale(1.1)}
+.ba-tag{position:absolute;top:14px;padding:5px 10px;border-radius:99px;background:rgba(10,11,14,.6);color:#fff;backdrop-filter:blur(4px);pointer-events:none}
+.ba-tag.l{left:14px}
+.ba-tag.r{right:14px;background:var(--accent)}
+
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;grid-auto-flow:dense}
+.shot{position:relative;aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:var(--surface-2)}
+.shot.wide{grid-column:span 2;aspect-ratio:auto}
+.shot-btn{position:absolute;inset:0;border:0;padding:0;background:none;cursor:zoom-in;display:block;width:100%}
+.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
 .shot:hover img{transform:scale(1.05)}
-/* placeholder visual cuando aún no hay foto */
-.shot .ph{position:absolute;inset:0;display:grid;place-items:center;
-  background-image:linear-gradient(var(--mesh) 1px,transparent 1px),linear-gradient(90deg,var(--mesh) 1px,transparent 1px);
-  background-size:16px 16px;color:var(--muted)}
-.shot .ph svg{width:38px;height:38px;stroke:currentColor;fill:none;stroke-width:1.4;opacity:.6}
-.shot .cap{position:absolute;left:0;right:0;bottom:0;padding:16px 16px 14px;
-  background:linear-gradient(transparent,color-mix(in srgb,var(--ink) 88%,transparent));
-  color:#fff;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;opacity:0;transform:translateY(8px);transition:opacity .3s,transform .3s}
-.shot:hover .cap{opacity:1;transform:none}
-.shot .cap b{font-family:"Archivo",sans-serif;font-weight:700;font-size:.95rem}
-.shot .cap .mono{color:rgba(255,255,255,.75)}
+/* el rodillo "pinta" la foto al aparecer */
+.js .shot::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 3px,rgba(255,255,255,.07) 3px 5px),var(--accent);
+  transform-origin:right;transition:transform .9s var(--ease-io) calc(var(--d,0) * 110ms + .1s)}
+.js .gallery.in .shot::after{transform:scaleX(0)}
+.shot figcaption{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:40px 16px 14px;pointer-events:none;
+  background:linear-gradient(transparent,rgba(10,11,14,.82));color:#fff;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.shot figcaption b{font-family:"Archivo",sans-serif;font-weight:700;font-size:.95rem;line-height:1.25}
+.chip{flex:0 0 auto;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);backdrop-filter:blur(4px)}
+.chip.after{background:var(--accent)}
 .gallery-note{margin-top:22px;font-size:13px;color:var(--muted);display:flex;gap:9px;align-items:center}
 .gallery-note svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:1.7;flex:0 0 auto}
+
+/* visor de fotos */
+.lb{border:0;padding:0;margin:0;background:transparent;width:100%;height:100%;max-width:none;max-height:none;color:#fff;overflow:hidden}
+.lb[open]{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;animation:lbIn .35s var(--ease)}
+.lb::backdrop{background:rgba(10,11,14,.9);backdrop-filter:blur(6px)}
+@keyframes lbIn{from{opacity:0;transform:scale(.96)}}
+.lb img{max-width:min(92vw,1100px);max-height:80vh;object-fit:contain;border-radius:var(--radius);touch-action:pan-y}
+.lb p{color:rgba(255,255,255,.8);text-align:center;padding:0 60px}
+.lb .iconbtn{position:absolute;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff}
+.lb .iconbtn:hover{border-color:#fff}
+.lb-x{top:18px;right:18px}
+.lb-prev{left:18px;top:50%;margin-top:-20px}
+.lb-next{right:18px;top:50%;margin-top:-20px}
 
 /* ---------- promesa strip ---------- */
 .promise{background:var(--ink);color:var(--bg);transition:background .5s}
 .promise .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
 .promise .item h4{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.15rem;margin-bottom:8px}
 .promise .item p{color:color-mix(in srgb,var(--bg) 65%,transparent);font-size:.95rem}
-.promise .item .mono{color:var(--accent);display:block;margin-bottom:14px}
-[data-theme="dark"] .promise .item .mono{color:var(--accent)}
+.promise .item .mono{color:var(--accent);display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.promise .item .mono::before{content:"";width:22px;height:2px;background:currentColor}
 
 /* ---------- contacto ---------- */
 .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
-.contact-left h2{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(1.9rem,4.5vw,3rem);letter-spacing:-.02em;line-height:1.02;margin-bottom:18px}
+.contact-left h2{margin-bottom:18px}
 .contact-left p{color:var(--muted);max-width:40ch;margin-bottom:32px}
 .direct{display:flex;flex-direction:column;gap:12px}
-.direct a{display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);transition:border-color .2s,transform .18s,background .25s}
-.direct a:hover{border-color:var(--ink);transform:translateX(4px)}
+.direct a{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);transition:border-color .2s,transform .25s var(--ease),background .25s}
+.direct a::before{content:"";position:absolute;inset:0;z-index:-1;background:color-mix(in srgb,var(--accent) 9%,var(--surface));transform:scaleX(0);transform-origin:left;transition:transform .5s var(--ease)}
+.direct a:hover{border-color:var(--accent);transform:translateX(4px)}
+.direct a:hover::before{transform:scaleX(1)}
 .direct a svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.7;flex:0 0 auto}
-.direct a .lbl{display:flex;flex-direction:column}
+.direct a .lbl{display:flex;flex-direction:column;min-width:0}
 .direct a .lbl .k{font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.05em}
-.direct a .lbl .v{font-weight:600}
+.direct a .lbl .v{font-weight:600;overflow-wrap:anywhere}
 
-form{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
+form{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);transition:background .5s,border-color .5s}
 .field{margin-bottom:18px}
 .field label{display:block;font-family:"IBM Plex Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
 .field input,.field select,.field textarea{
   width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:var(--radius);
-  background:var(--bg);color:var(--ink);font-family:inherit;font-size:15px;transition:border-color .2s}
+  background:var(--bg);color:var(--ink);font-family:inherit;font-size:15px;transition:border-color .2s,box-shadow .2s}
 .field textarea{resize:vertical;min-height:110px}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.field.err input{border-color:var(--accent);animation:shake .4s ease}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 form .btn-primary{width:100%;justify-content:center;margin-top:6px}
 .form-hint{margin-top:14px;font-size:12.5px;color:var(--muted);text-align:center}
 
 /* ---------- footer ---------- */
-footer{border-top:1px solid var(--line);padding:44px 0;transition:border-color .5s}
+footer{border-top:1px solid var(--line);padding:56px 0 40px;overflow:hidden;transition:border-color .5s}
+.bigword{display:block;font-family:"Archivo",sans-serif;font-weight:900;font-size:clamp(2.4rem,11vw,8.4rem);line-height:.9;letter-spacing:-.05em;
+  color:transparent;-webkit-text-stroke:1.5px var(--line);margin:0 0 34px -.04em;white-space:nowrap;
+  background:linear-gradient(var(--accent),var(--accent)) left/0% 100% no-repeat;-webkit-background-clip:text;background-clip:text;
+  transition:background-size 1.8s var(--ease-io)}
+.bigword.in,.no-js .bigword{background-size:100% 100%}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
 .foot .brand{font-size:14px}
 .foot small{color:var(--muted);font-size:13px}
+
+/* botón flotante de WhatsApp */
+.fab{position:fixed;right:18px;bottom:18px;z-index:40;width:58px;height:58px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  display:grid;place-items:center;box-shadow:0 14px 30px -10px rgba(10,14,60,.6);
+  transform:translateY(120px) scale(.6);opacity:0;transition:transform .5s var(--ease),opacity .3s}
+.fab.show{transform:none;opacity:1}
+.fab svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fab::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);animation:ping 2.4s ease-out infinite}
+@keyframes ping{0%{transform:scale(1);opacity:.7}70%,100%{transform:scale(1.6);opacity:0}}
+
+/* cambio de tema: la pintura nueva se extiende desde el botón */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+.vt *{transition:none !important}
 
 /* ================= MODO AHORRO ================= */
 body.eco *,body.eco *::before,body.eco *::after{
   animation:none !important;
   transition:none !important;
 }
-body.eco .hero-mesh,body.eco .marquee,body.eco .shot .ph{display:none}
-body.eco header{backdrop-filter:none}
+body.eco .hero-mesh,body.eco .hc-stage::before,body.eco .fab::before,body.eco .house .rain{display:none}
+body.eco header,body.eco .ba-tag,body.eco .chip,body.eco .lb::backdrop{backdrop-filter:none}
 body.eco .obs,body.eco .fade-up,body.eco .reveal-line>span{opacity:1 !important;transform:none !important}
-body.eco .shadow,body.eco form{box-shadow:none}
-body.eco .svc::after{display:none}
-body.eco .svc:hover{color:inherit}
-body.eco .svc:hover .svc-num,body.eco .svc:hover .svc-desc{color:var(--muted)}
-body.eco .svc:hover{background:var(--surface-2)}
+body.eco .house-card,body.eco form,body.eco .stamp,body.eco .tape,body.eco .fab,body.eco .ba-knob{box-shadow:none}
+body.eco .shot::after,body.eco .svc::after{display:none}
+body.eco .svc:hover,body.eco .svc:focus-visible{color:inherit;background:var(--surface-2)}
+body.eco .svc:hover .svc-num,body.eco .svc:hover .svc-desc,body.eco .svc:focus-visible .svc-num,body.eco .svc:focus-visible .svc-desc{color:var(--muted)}
+body.eco .bigword{background-size:100% 100%}
+body.eco .shot:hover img{transform:none}
 
 /* respeta reduce-motion del sistema */
 @media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto}
-  .hero-mesh,.marquee-track{animation:none}
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;transition-delay:0s !important;scroll-behavior:auto !important}
+  #intro,.hero-mesh,.hc-stage::before,.fab::before,.house .rain{display:none !important}
   .reveal-line>span,.obs,.fade-up{opacity:1 !important;transform:none !important}
+  .tape-track,.stamp svg.ring,.house .rays{animation:none !important}
 }
 
 /* ---------- responsive ---------- */
 @media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:64px}
+  .house-wrap{max-width:560px;width:100%;margin:0 auto}
+  .stamp{top:-40px;left:-8px;width:96px;height:96px}
   .services{grid-template-columns:1fr 1fr}
+  .steps{grid-template-columns:1fr 1fr;row-gap:40px}
+  .track{display:none}
   .gallery{grid-template-columns:1fr 1fr}
   .promise .wrap{grid-template-columns:1fr;gap:28px}
   .contact-grid{grid-template-columns:1fr;gap:36px}
@@ -264,22 +585,72 @@ body.eco .svc:hover{background:var(--surface-2)}
   .wrap{padding:0 20px}
   .nav-links{display:none}
   .menu-toggle{display:grid}
-  section{padding:66px 0}
-  .hero{padding:64px 0 54px}
+  section{padding:72px 0}
+  .hero{padding:44px 0 64px}
   .services{grid-template-columns:1fr}
-  .gallery{grid-template-columns:1fr 1fr;gap:12px}
+  .svc{min-height:0;padding:28px 24px 30px}
+  .steps{grid-template-columns:1fr;gap:30px;padding-left:0}
+  .track{display:block;top:28px;bottom:28px;left:27px;right:auto;width:2px;height:auto}
+  .track i{transform-origin:top;transform:scaleY(var(--p,0))}
+  .step{display:grid;grid-template-columns:56px 1fr;column-gap:18px}
+  .step .n{margin-bottom:0;grid-row:span 3}
+  .ba-row{grid-template-columns:1fr;gap:28px}
+  .gallery{gap:12px}
+  .shot.wide{aspect-ratio:4/3}
+  .shot figcaption{padding:30px 10px 10px;flex-direction:column;align-items:flex-start;gap:6px}
+  .shot figcaption b{font-size:.85rem}
+  #brandName{width:min-content;font-size:15px;line-height:1.05}
   .eco-btn span.txt{display:none}
   .eco-btn{padding:0;width:40px;justify-content:center}
+  .stamp{width:84px;height:84px;top:-36px}
+  .stamp .core{width:26px;height:26px}
+  .lb-prev,.lb-next{top:auto;bottom:22px;margin-top:0}
+  .lb p{padding:0 70px}
+  .in-meta{flex-direction:column;align-items:center;bottom:18px;gap:2px}
 }
 </style>
 </head>
 <body>
 
-<header>
+<!-- ================= INTRO (se ve unos 3 s; tocar para saltar) ================= -->
+<div id="intro" aria-hidden="true">
+  <svg width="0" height="0" style="position:absolute">
+    <symbol id="roller" viewBox="0 0 92 270">
+      <!-- mango -->
+      <path d="M73 202v12H40l-20 26" fill="none" style="stroke:var(--muted)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 240 6 262" style="stroke:var(--ink)" stroke-width="15" stroke-linecap="round"/>
+      <!-- cilindro con pintura -->
+      <rect x="54" y="0" width="38" height="202" rx="9" style="fill:color-mix(in srgb,var(--accent) 82%,var(--ink))"/>
+      <rect x="60" y="6" width="7" height="190" rx="3.5" style="fill:var(--accent-ink)" opacity=".22"/>
+      <path d="M78 10v182M84 14v174" style="stroke:var(--ink)" stroke-width="1.2" opacity=".18" stroke-dasharray="3 5"/>
+    </symbol>
+  </svg>
+  <div class="in-mesh"></div>
+  <div class="in-band b1"></div>
+  <div class="in-band b2"></div>
+  <div class="in-band b3"></div>
+  <div class="in-roll r1"><svg><use href="#roller"/></svg></div>
+  <div class="in-roll r2"><svg><use href="#roller"/></svg></div>
+  <div class="in-roll r3"><svg><use href="#roller"/></svg></div>
+  <div class="in-center">
+    <div class="in-word"><span><span style="--i:0">Trabajos</span></span><span><span style="--i:1">independientes</span></span></div>
+    <p class="in-tag mono">Pintura · Impermeabilización · Herrería</p>
+  </div>
+  <div class="in-meta mono"><span>Lázaro Cárdenas, Mich.</span><span>Toca para saltar</span></div>
+  <div class="in-drips">
+    <i style="--x:4%;--w:14px;--h:60px"></i><i style="--x:13%;--w:22px;--h:120px"></i><i style="--x:21%;--w:10px;--h:44px"></i>
+    <i style="--x:33%;--w:18px;--h:150px"></i><i style="--x:41%;--w:12px;--h:70px"></i><i style="--x:52%;--w:26px;--h:110px"></i>
+    <i style="--x:61%;--w:10px;--h:52px"></i><i style="--x:70%;--w:20px;--h:160px"></i><i style="--x:79%;--w:12px;--h:80px"></i>
+    <i style="--x:88%;--w:24px;--h:130px"></i><i style="--x:95%;--w:12px;--h:58px"></i>
+  </div>
+</div>
+
+<header id="top">
   <div class="wrap nav">
-    <a href="#inicio" class="brand"><span class="logo" aria-hidden="true"></span><span id="brandName">Tu Nombre</span></a>
+    <a href="#inicio" class="brand"><span class="logo" aria-hidden="true"></span><span id="brandName">Trabajos independientes</span></a>
     <nav class="nav-links" aria-label="Principal">
       <a href="#servicios">Servicios</a>
+      <a href="#proceso">Cómo trabajo</a>
       <a href="#trabajos">Trabajos</a>
       <a href="#contacto">Contacto</a>
     </nav>
@@ -290,95 +661,204 @@ body.eco .svc:hover{background:var(--surface-2)}
       <button class="iconbtn" id="themeBtn" aria-label="Cambiar tema claro/oscuro" title="Tema">
         <svg id="themeIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
-      <button class="iconbtn menu-toggle" id="menuBtn" aria-label="Menú">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <button class="iconbtn menu-toggle" id="menuBtn" aria-label="Abrir menú" aria-expanded="false" aria-controls="mnav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line class="l1" x1="3" y1="6" x2="21" y2="6"/><line class="l2" x1="3" y1="12" x2="21" y2="12"/><line class="l3" x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </div>
+  <div class="progress" aria-hidden="true"></div>
 </header>
+
+<nav class="mnav" id="mnav" aria-label="Menú móvil">
+  <a href="#servicios" style="--i:0">Servicios</a>
+  <a href="#proceso" style="--i:1">Cómo trabajo</a>
+  <a href="#trabajos" style="--i:2">Trabajos</a>
+  <a href="#contacto" style="--i:3">Agendar visita</a>
+  <p class="mono">Visita y presupuesto sin costo</p>
+</nav>
 
 <main id="inicio">
 
   <!-- ================= HERO ================= -->
-  <section class="hero" style="padding-top:96px">
+  <section class="hero">
     <div class="hero-mesh" aria-hidden="true"></div>
-    <div class="wrap">
-      <div class="hero-eyebrow mono eyebrow"><span class="tick"></span>Trabajos independientes · Visita sin costo</div>
-      <h1>
-        <span class="reveal-line"><span>Cuido tu casa</span></span>
-        <span class="reveal-line"><span>de arriba</span></span>
-        <span class="reveal-line"><span><em class="paint" style="font-style:normal">abajo.</em></span></span>
-      </h1>
-      <p class="hero-sub fade-up">
-        Pintura, resane de grietas, <strong>impermeabilización</strong>, mosquiteros a medida y
-        mantenimiento de ventanas y puertas de acero. Paso a ver el lugar, te doy el precio
-        y quedamos. Trabajo limpio, parejo y que dura.
-      </p>
-      <div class="cta-row fade-up">
-        <a class="btn btn-primary" id="heroWhats" href="#contacto">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Agendar visita
-        </a>
-        <a class="btn btn-ghost" href="#trabajos">Ver trabajos</a>
+    <div class="wrap hero-grid">
+      <div>
+        <div class="hero-eyebrow mono eyebrow fade-up"><span class="tick"></span><span id="heroArea">Lázaro Cárdenas, Mich. · Visita sin costo</span></div>
+        <h1>
+          <span class="reveal-line"><span>Cuido tu casa</span></span>
+          <span class="reveal-line"><span>de arriba</span></span>
+          <span class="reveal-line"><span><em class="swash" style="font-style:normal">abajo.</em></span></span>
+        </h1>
+        <p class="hero-sub fade-up">
+          Pintura, resane de grietas, <strong>impermeabilización</strong>, mosquiteros a medida y
+          mantenimiento de ventanas y puertas de acero. Paso a ver el lugar, te doy el precio
+          y quedamos. Trabajo limpio, parejo y que dura.
+        </p>
+        <div class="cta-row fade-up">
+          <a class="btn btn-primary" href="#contacto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Agendar visita
+          </a>
+          <a class="btn btn-ghost" href="#trabajos">Ver trabajos</a>
+        </div>
+        <div class="free-note fade-up">
+          <span><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>La visita y el presupuesto son gratis</span>
+          <span><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>Sin compromiso</span>
+        </div>
+      </div>
+
+      <!-- Casa animada: se arregla paso a paso, de arriba abajo -->
+      <div class="house-wrap fade-up">
+        <div class="stamp" aria-hidden="true">
+          <svg class="ring" viewBox="0 0 120 120"><defs><path id="circ" d="M60 60m-45 0a45 45 0 1 1 90 0a45 45 0 1 1-90 0"/></defs>
+            <text><textPath href="#circ" textLength="280" lengthAdjust="spacing">VISITA GRATIS • SIN COMPROMISO •</textPath></text></svg>
+          <svg class="core" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+        </div>
+        <div class="house-card" id="houseCard">
+          <div class="hc-top mono"><span class="hc-state" id="hState">Obra en curso</span></div>
+          <div class="hc-stage">
+            <svg class="house" id="house" viewBox="0 0 420 380" role="img" aria-label="Ilustración de una casa que se arregla paso a paso: impermeabilización de la azotea, resane de grietas, pintura de muros, mosquitero en la ventana y pintura de la puerta de acero.">
+              <defs>
+                <pattern id="meshPat" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M5 0H0V5" fill="none" style="stroke:var(--ink)" stroke-width=".7" opacity=".6"/></pattern>
+                <clipPath id="doorClip"><rect x="240" y="226" width="64" height="124"/></clipPath>
+                <linearGradient id="shineGrad" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+              </defs>
+
+              <!-- cielo: sol, nube y lluvia -->
+              <g class="sun"><g class="rays"><path d="M356 21v-7M356 79v7M327 50h-7M385 50h7M335.5 29.5l-5-5M376.5 70.5l5 5M335.5 70.5l-5 5M376.5 29.5l5-5"/></g><circle cx="356" cy="50" r="15"/></g>
+              <g class="cloud"><path class="cloud-fill fi" d="M84 78h68a14 14 0 0 0 0-28a20 20 0 0 0-37-8a15 15 0 0 0-28 10a13 13 0 0 0-3 26z"/><path class="o" style="--i:0" d="M84 78h68a14 14 0 0 0 0-28a20 20 0 0 0-37-8a15 15 0 0 0-28 10a13 13 0 0 0-3 26z" pathLength="1"/></g>
+              <g class="rain fi">
+                <line class="drop" style="--i:0" x1="94" y1="86" x2="94" y2="94"/><line class="drop" style="--i:3" x1="105" y1="86" x2="105" y2="94"/>
+                <line class="drop" style="--i:1" x1="117" y1="86" x2="117" y2="94"/><line class="drop" style="--i:4" x1="128" y1="86" x2="128" y2="94"/>
+                <line class="drop" style="--i:2" x1="139" y1="86" x2="139" y2="94"/><line class="drop" style="--i:5" x1="149" y1="86" x2="149" y2="94"/>
+              </g>
+
+              <!-- muro: estado inicial, grieta, resane y pintura -->
+              <rect class="wall-old fi" x="70" y="140" width="280" height="210"/>
+              <ellipse class="stain fi" cx="122" cy="152" rx="24" ry="8"/>
+              <ellipse class="stain fi" cx="300" cy="150" rx="17" ry="6"/>
+              <path class="o thin" style="--i:6" d="M332 146l-7 13 8 9-10 14 6 10-8 15" pathLength="1"/>
+              <path class="patch" d="M332 146l-7 13 8 9-10 14 6 10-8 15" pathLength="1"/>
+              <rect class="strip sc" style="--i:0" x="70" y="140" width="70.5" height="210"/>
+              <rect class="strip sc" style="--i:1" x="140" y="140" width="70.5" height="210"/>
+              <rect class="strip sc" style="--i:2" x="210" y="140" width="70.5" height="210"/>
+              <rect class="strip sc" style="--i:3" x="280" y="140" width="70" height="210"/>
+
+              <!-- azotea + impermeabilizante + tinaco -->
+              <rect class="slab fi" x="50" y="120" width="320" height="20"/>
+              <rect class="coat sc" x="47" y="113" width="326" height="8" rx="3"/>
+              <rect class="tank fi" x="292" y="74" width="40" height="38" rx="7"/>
+
+              <!-- ventana con mosquitero -->
+              <rect class="glass fi" x="96" y="180" width="96" height="84"/>
+              <rect class="mesh-fill sc" x="96" y="180" width="96" height="84"/>
+
+              <!-- puerta de acero -->
+              <rect class="door-old fi" x="240" y="226" width="64" height="124"/>
+              <g class="fi"><circle class="rust" cx="252" cy="246" r="4"/><circle class="rust" cx="290" cy="300" r="5"/><circle class="rust" cx="262" cy="330" r="3.5"/><circle class="rust" cx="284" cy="258" r="2.5"/></g>
+              <rect class="door-new sc" x="240" y="226" width="64" height="124"/>
+              <g clip-path="url(#doorClip)"><rect class="shine" x="192" y="220" width="34" height="136" transform="skewX(-14)"/></g>
+
+              <!-- trazos -->
+              <rect class="o" style="--i:1" x="50" y="120" width="320" height="20" pathLength="1"/>
+              <rect class="o" style="--i:2" x="292" y="74" width="40" height="38" rx="7" pathLength="1"/>
+              <path class="o thin" style="--i:2" d="M296 84h32M312 74v-6" pathLength="1"/>
+              <rect class="o" style="--i:3" x="70" y="140" width="280" height="210" pathLength="1"/>
+              <rect class="o" style="--i:4" x="96" y="180" width="96" height="84" pathLength="1"/>
+              <path class="o thin" style="--i:5" d="M112 180v84M128 180v84M144 180v84M160 180v84M176 180v84M96 222h96" pathLength="1"/>
+              <rect class="o" style="--i:5" x="90" y="264" width="108" height="7" pathLength="1"/>
+              <rect class="o" style="--i:6" x="240" y="226" width="64" height="124" pathLength="1"/>
+              <path class="o thin" style="--i:7" d="M252 232v112M264 232v112M276 232v112M288 232v112M240 286h64" pathLength="1"/>
+              <circle class="o" style="--i:8" cx="296" cy="292" r="2.5" pathLength="1"/>
+              <path class="o" style="--i:4" d="M20 350 48 124M38 350 64 124M23 327h18M26 300h18M30 273h17M33 246h17M36 219h17M40 192h16M43 165h16M46 138h16" pathLength="1"/>
+              <path class="o" style="--i:0" d="M6 350h408" pathLength="1"/>
+
+              <!-- rodillo que pinta el muro -->
+              <g class="h-roller">
+                <path d="M30 0h6v-16L0-24v-6" fill="none" style="stroke:var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M0-30v-22" style="stroke:var(--ink)" stroke-width="7" stroke-linecap="round"/>
+                <rect x="-30" y="-7" width="60" height="14" rx="5" style="fill:color-mix(in srgb,var(--accent) 80%,var(--ink));stroke:var(--ink)" stroke-width="1.5"/>
+              </g>
+            </svg>
+          </div>
+          <div class="hc-foot">
+            <div class="hc-status">
+              <p class="mono" id="hStatus">Revisando el lugar…</p>
+              <button class="replay mono" id="replayBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Ver otra vez</button>
+            </div>
+            <ul class="checks">
+              <li class="check"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-7" pathLength="1"/></svg>Impermeabilización</li>
+              <li class="check"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-7" pathLength="1"/></svg>Resane</li>
+              <li class="check"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-7" pathLength="1"/></svg>Pintura</li>
+              <li class="check"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-7" pathLength="1"/></svg>Mosquitero</li>
+              <li class="check"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-7" pathLength="1"/></svg>Herrería</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ================= MARQUEE ================= -->
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee-track" id="marquee">
+  <!-- ================= CINTAS ================= -->
+  <div class="tapes" aria-hidden="true">
+    <div class="tape t1"><div class="tape-track">
       <span>Pintura</span><span>Resane de grietas</span><span>Impermeabilización</span><span>Mosquiteros</span><span>Ventanas de acero</span><span>Puertas de acero</span><span>Mantenimiento</span>
       <span>Pintura</span><span>Resane de grietas</span><span>Impermeabilización</span><span>Mosquiteros</span><span>Ventanas de acero</span><span>Puertas de acero</span><span>Mantenimiento</span>
-    </div>
+    </div></div>
+    <div class="tape t2"><div class="tape-track">
+      <span>Visita gratis</span><span>Precio claro</span><span>Trabajo limpio</span><span>Lázaro Cárdenas</span><span>Sin compromiso</span>
+      <span>Visita gratis</span><span>Precio claro</span><span>Trabajo limpio</span><span>Lázaro Cárdenas</span><span>Sin compromiso</span>
+    </div></div>
   </div>
 
   <!-- ================= SERVICIOS ================= -->
   <section id="servicios">
     <div class="wrap">
-      <div class="sec-head obs">
-        <h2>Lo que hago</h2>
-        <p>Cada trabajo con materiales de calidad y acabado cuidado. Si tu casa lo necesita, aquí está.</p>
+      <div class="sec-head">
+        <h2 class="obs"><span class="kicker mono eyebrow">Servicios</span>Lo que hago</h2>
+        <p class="obs">Cada trabajo con materiales de calidad y acabado cuidado. Si tu casa lo necesita, aquí está.</p>
       </div>
-      <div class="services obs">
+      <div class="services">
 
-        <article class="svc" tabindex="0">
+        <article class="svc obs" tabindex="0">
           <div class="svc-num mono">01</div>
-          <svg class="svc-ico" viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v6h13a2 2 0 0 1 2 2v2a3 3 0 0 0 3-3V5a2 2 0 0 0-2-2z"/><path d="M11 11v4a2 2 0 0 0 2 2h1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3"/></svg>
+          <svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M19 3H5a2 2 0 0 0-2 2v6h13a2 2 0 0 1 2 2v2a3 3 0 0 0 3-3V5a2 2 0 0 0-2-2z"/><path pathLength="1" d="M11 11v4a2 2 0 0 0 2 2h1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3"/></svg>
           <h3>Pintura</h3>
           <p class="svc-desc">Interiores y exteriores, ventanas y herrería. Acabados parejos, sin escurridos ni manchas.</p>
         </article>
 
-        <article class="svc" tabindex="0">
+        <article class="svc obs" tabindex="0">
           <div class="svc-num mono">02</div>
-          <svg class="svc-ico" viewBox="0 0 24 24"><path d="M4 3v6M4 21v-6M20 3v18"/><path d="M4 9c4 0 5 3 8 3s5-3 8-3M4 15c4 0 5-3 8-3"/></svg>
+          <svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M4 3v6M4 21v-6M20 3v18"/><path pathLength="1" d="M4 9c4 0 5 3 8 3s5-3 8-3M4 15c4 0 5-3 8-3"/></svg>
           <h3>Resane de grietas</h3>
           <p class="svc-desc">Sello y reparo grietas antes de pintar, para que no vuelvan a salir con el tiempo.</p>
         </article>
 
-        <article class="svc" tabindex="0">
+        <article class="svc obs" tabindex="0">
           <div class="svc-num mono">03</div>
-          <svg class="svc-ico" viewBox="0 0 24 24"><path d="M12 2s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/><path d="M9 14a3 3 0 0 0 3 3"/></svg>
+          <svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M12 2s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/><path pathLength="1" d="M9 14a3 3 0 0 0 3 3"/></svg>
           <h3>Impermeabilización</h3>
           <p class="svc-desc">Protejo techos y azoteas contra filtraciones y humedad. Adiós goteras en temporada de lluvia.</p>
         </article>
 
-        <article class="svc" tabindex="0">
+        <article class="svc obs" tabindex="0">
           <div class="svc-num mono">04</div>
-          <svg class="svc-ico" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M4 8h16M4 13h16M4 18h16M9 3v18M14 3v18"/></svg>
+          <svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><rect pathLength="1" x="4" y="3" width="16" height="18" rx="1"/><path pathLength="1" d="M4 8h16M4 13h16M4 18h16M9 3v18M14 3v18"/></svg>
           <h3>Mosquiteros</h3>
           <p class="svc-desc">Instalo mosquiteros a la medida en ventanas y puertas. Ventilas sin dejar entrar bichos.</p>
         </article>
 
-        <article class="svc" tabindex="0">
+        <article class="svc obs" tabindex="0">
           <div class="svc-num mono">05</div>
-          <svg class="svc-ico" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M4 12h16"/><circle cx="15" cy="12" r="1"/></svg>
+          <svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><rect pathLength="1" x="4" y="2" width="16" height="20" rx="1"/><path pathLength="1" d="M4 12h16"/><circle pathLength="1" cx="15" cy="12" r="1"/></svg>
           <h3>Ventanas y puertas de acero</h3>
           <p class="svc-desc">Pinto y doy mantenimiento a la herrería para que no se oxide y se vea como nueva.</p>
         </article>
 
-        <article class="svc" tabindex="0">
+        <article class="svc obs" tabindex="0">
           <div class="svc-num mono">06</div>
-          <svg class="svc-ico" viewBox="0 0 24 24"><path d="M14 7l3 3M5 21l3-1 11-11a2 2 0 0 0 0-3l-1-1a2 2 0 0 0-3 0L4 16l-1 3z"/></svg>
+          <svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M14 7l3 3M5 21l3-1 11-11a2 2 0 0 0 0-3l-1-1a2 2 0 0 0-3 0L4 16l-1 3z"/></svg>
           <h3>Mantenimiento general</h3>
           <p class="svc-desc">Y demás arreglos de la casa. Si algo se echó a perder, lo revisamos y lo dejamos bien.</p>
         </article>
@@ -387,67 +867,83 @@ body.eco .svc:hover{background:var(--surface-2)}
     </div>
   </section>
 
-  <!-- ================= TRABAJOS ================= -->
-  <section id="trabajos" style="background:var(--surface-2);transition:background .5s">
+  <!-- ================= PROCESO ================= -->
+  <section class="process" id="proceso">
     <div class="wrap">
-      <div class="sec-head obs">
-        <h2>Trabajos hechos</h2>
-        <p>Una muestra de proyectos terminados. El mejor argumento es el resultado.</p>
+      <div class="sec-head">
+        <h2 class="obs"><span class="kicker mono eyebrow">Cómo trabajo</span>Sin sorpresas, paso a paso</h2>
+        <p class="obs">Para darte un precio justo necesito ver el lugar. Por eso primero voy, reviso y luego cotizo.</p>
+      </div>
+      <ol class="steps" id="steps">
+        <li class="track" aria-hidden="true"><i></i></li>
+        <li class="step"><span class="n">01</span><h3>Me escribes</h3><p>Por WhatsApp o con el formulario. Me cuentas qué necesitas y dónde.</p></li>
+        <li class="step"><span class="n">02</span><h3>Voy a ver el lugar</h3><p>Reviso, mido y te explico qué conviene hacer.</p><span class="free mono">Sin costo</span></li>
+        <li class="step"><span class="n">03</span><h3>Te doy el precio</h3><p>Claro y antes de empezar. Tú decides con calma.</p></li>
+        <li class="step"><span class="n">04</span><h3>Hago el trabajo</h3><p>En la fecha que acordamos. Al terminar dejo todo limpio.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= TRABAJOS ================= -->
+  <section id="trabajos">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="obs"><span class="kicker mono eyebrow">Trabajos hechos</span>El mejor argumento es el resultado</h2>
+        <p class="obs">Arrastra la barra para ver el antes y el después. Toca cualquier foto para verla en grande.</p>
       </div>
 
       <!-- =========================================================== -->
       <!--  PARA PONER TUS FOTOS:                                       -->
-      <!--  dentro de cada <div class="shot"> reemplaza el bloque       -->
-      <!--  <div class="ph">...</div> por: <img src="foto.jpg" alt="">  -->
-      <!--  (guarda tus fotos junto a este archivo)                     -->
+      <!--  · Comparador antes/después: cambia los dos <img> de un .ba  -->
+      <!--    (primero el ANTES, luego el DESPUÉS con class="ba-after").-->
+      <!--  · Galería: copia un <figure class="shot"> y cambia src, alt -->
+      <!--    y data-cap. Usa class="shot wide" para fotos horizontales.-->
+      <!--  (guarda las fotos optimizadas en pictures/web/)             -->
       <!-- =========================================================== -->
+      <div class="ba-row">
+        <figure class="ba-fig obs">
+          <div class="ba" data-ba>
+            <img src="pictures/web/herreria_antes.jpg" alt="Puerta de acero con pintura oxidada antes de repintar" width="1202" height="1600" loading="lazy">
+            <img class="ba-after" src="pictures/web/herreria_despues.jpg" alt="La misma puerta de acero repintada de negro, terminada" width="900" height="1600" loading="lazy">
+            <span class="ba-tag l mono">Antes</span><span class="ba-tag r mono">Después</span>
+            <div class="ba-handle"><span class="ba-knob"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
+            <input class="ba-range sr" type="range" min="0" max="100" value="50" aria-label="Comparar antes y después de la puerta de acero">
+          </div>
+          <figcaption><b>Puerta de acero</b><span class="mono">De oxidada a como nueva</span></figcaption>
+        </figure>
+        <figure class="ba-fig obs">
+          <div class="ba" data-ba>
+            <img src="pictures/web/PuertaBodegaAntes.jpg" alt="Puerta de bodega de madera y herrería antes de pintar" width="692" height="922" loading="lazy">
+            <img class="ba-after" src="pictures/web/PuertaBodegaDespues.jpg" alt="Puerta de bodega repintada de negro, terminada" width="692" height="922" loading="lazy">
+            <span class="ba-tag l mono">Antes</span><span class="ba-tag r mono">Después</span>
+            <div class="ba-handle"><span class="ba-knob"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
+            <input class="ba-range sr" type="range" min="0" max="100" value="50" aria-label="Comparar antes y después de la puerta de bodega">
+          </div>
+          <figcaption><b>Puerta de bodega</b><span class="mono">Pintada y renovada</span></figcaption>
+        </figure>
+      </div>
+
       <div class="gallery obs">
-
-        <div class="shot">
-          <img src="pictures/web/Antes_ceja.jpg" alt="Cornisa con grieta y filtración de humedad antes de reparar">
-          <div class="cap"><b>Grieta y filtración</b><span class="mono">Antes</span></div>
-        </div>
-
-        <div class="shot">
-          <img src="pictures/web/Despues_ceja.jpg" alt="Cornisa resanada e impermeabilizada, terminada">
-          <div class="cap"><b>Resanado e impermeabilizado</b><span class="mono">Después</span></div>
-        </div>
-
-        <div class="shot">
-          <img src="pictures/web/herreria_antes.jpg" alt="Puerta de acero con pintura oxidada antes de repintar">
-          <div class="cap"><b>Puerta de acero oxidada</b><span class="mono">Antes</span></div>
-        </div>
-
-        <div class="shot">
-          <img src="pictures/web/herreria_despues.jpg" alt="Puerta de acero repintada de negro, terminada">
-          <div class="cap"><b>Puerta pintada y renovada</b><span class="mono">Después</span></div>
-        </div>
-
-        <div class="shot">
-          <img src="pictures/web/Mosquitero_arriba.jpg" alt="Mosquitero a medida instalado en puerta">
-          <div class="cap"><b>Mosquitero a medida</b><span class="mono">Instalado</span></div>
-        </div>
-
-        <div class="shot">
-          <img src="pictures/web/PuertaBodegaAntes.jpg" alt="Puerta de bodega de madera y herrería antes de pintar">
-          <div class="cap"><b>Puerta de bodega</b><span class="mono">Antes</span></div>
-        </div>
-
-        <div class="shot">
-          <img src="pictures/web/PuertaBodegaDespues.jpg" alt="Puerta de bodega repintada de negro, terminada">
-          <div class="cap"><b>Puerta de bodega pintada</b><span class="mono">Después</span></div>
-        </div>
-
-        <div class="shot">
-          <img src="pictures/web/PuertaBodegaAntes2.jpg" alt="Detalle de herrajes y cerraduras de la puerta de bodega antes de pintar">
-          <div class="cap"><b>Detalle de herrajes</b><span class="mono">Antes</span></div>
-        </div>
-
-        <div class="shot">
-          <img src="pictures/web/PuertaBodegaDespues2.jpg" alt="Puerta de bodega terminada, vista completa">
-          <div class="cap"><b>Puerta de bodega terminada</b><span class="mono">Después</span></div>
-        </div>
-
+        <figure class="shot">
+          <button class="shot-btn" type="button" data-cap="Grieta y filtración en cornisa · Antes"><img src="pictures/web/Antes_ceja.jpg" alt="Cornisa con grieta y filtración de humedad antes de reparar" width="1200" height="1600" loading="lazy"></button>
+          <figcaption><b>Grieta y filtración</b><span class="chip mono">Antes</span></figcaption>
+        </figure>
+        <figure class="shot wide">
+          <button class="shot-btn" type="button" data-cap="Cornisa resanada e impermeabilizada · Después"><img src="pictures/web/Despues_ceja.jpg" alt="Cornisa resanada e impermeabilizada, terminada" width="1600" height="1200" loading="lazy"></button>
+          <figcaption><b>Resanado e impermeabilizado</b><span class="chip after mono">Después</span></figcaption>
+        </figure>
+        <figure class="shot">
+          <button class="shot-btn" type="button" data-cap="Mosquitero a medida · Instalado"><img src="pictures/web/Mosquitero_arriba.jpg" alt="Mosquitero a medida instalado en puerta" width="1200" height="1600" loading="lazy"></button>
+          <figcaption><b>Mosquitero a medida</b><span class="chip after mono">Instalado</span></figcaption>
+        </figure>
+        <figure class="shot">
+          <button class="shot-btn" type="button" data-cap="Herrajes de la puerta de bodega · Antes"><img src="pictures/web/PuertaBodegaAntes2.jpg" alt="Detalle de herrajes y cerraduras de la puerta de bodega antes de pintar" width="692" height="922" loading="lazy"></button>
+          <figcaption><b>Detalle de herrajes</b><span class="chip mono">Antes</span></figcaption>
+        </figure>
+        <figure class="shot">
+          <button class="shot-btn" type="button" data-cap="Puerta de bodega terminada · Después"><img src="pictures/web/PuertaBodegaDespues2.jpg" alt="Puerta de bodega terminada, vista completa" width="692" height="922" loading="lazy"></button>
+          <figcaption><b>Puerta de bodega terminada</b><span class="chip after mono">Después</span></figcaption>
+        </figure>
       </div>
     </div>
   </section>
@@ -465,8 +961,9 @@ body.eco .svc:hover{background:var(--surface-2)}
   <section id="contacto">
     <div class="wrap contact-grid">
       <div class="contact-left obs">
+        <span class="kicker mono eyebrow">Contacto</span>
         <h2>Agendemos una visita</h2>
-        <p>Para darte un precio justo necesito ver el lugar. Escríbeme por WhatsApp o llena el formulario y pasamos a revisar sin costo ni compromiso.</p>
+        <p>Para darte un precio justo necesito ver el lugar. Escríbeme por WhatsApp o llena el formulario y paso a revisar sin costo ni compromiso.</p>
         <div class="direct">
           <a id="waLink" href="#" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg>
@@ -486,11 +983,11 @@ body.eco .svc:hover{background:var(--surface-2)}
       <form id="contactForm" class="obs" novalidate>
         <div class="field">
           <label for="f-name">Tu nombre</label>
-          <input id="f-name" name="name" type="text" placeholder="¿Cómo te llamas?" required>
+          <input id="f-name" name="name" type="text" placeholder="¿Cómo te llamas?" autocomplete="name" required>
         </div>
         <div class="field">
           <label for="f-phone">Teléfono</label>
-          <input id="f-phone" name="phone" type="tel" placeholder="Para poder responderte">
+          <input id="f-phone" name="phone" type="tel" placeholder="Para poder responderte" autocomplete="tel">
         </div>
         <div class="field">
           <label for="f-type">Tipo de trabajo</label>
@@ -516,9 +1013,9 @@ body.eco .svc:hover{background:var(--surface-2)}
           <label for="f-msg">Cuéntame</label>
           <textarea id="f-msg" name="msg" placeholder="Describe el trabajo y el lugar: tamaño aproximado, estado, si hay humedad, etc."></textarea>
         </div>
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="btn btn-primary" id="sendBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
-          Agendar visita por WhatsApp
+          <span>Agendar visita por WhatsApp</span>
         </button>
         <p class="form-hint">Se abre WhatsApp con tu solicitud lista para enviar.</p>
       </form>
@@ -528,40 +1025,68 @@ body.eco .svc:hover{background:var(--surface-2)}
 </main>
 
 <footer>
-  <div class="wrap foot">
-    <span class="brand"><span class="logo" aria-hidden="true"></span><span id="footName">Tu Nombre</span></span>
-    <small id="footArea">Trabajos independientes · Zona de servicio: Tu ciudad</small>
-    <small>© <span id="year"></span></small>
+  <div class="wrap">
+    <span class="bigword" data-paint aria-hidden="true"><span style="display:block">Trabajos</span><span style="display:block">independientes</span></span>
+    <div class="foot">
+      <span class="brand"><span class="logo" aria-hidden="true"></span><span id="footName">José Ángel Hernández Amaya</span></span>
+      <small id="footArea">Zona de servicio: Lázaro Cárdenas, Mich.</small>
+      <small>© <span id="year"></span> · ohmdail.com</small>
+    </div>
   </div>
 </footer>
+
+<a class="fab" id="fab" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5"/></svg>
+</a>
+
+<dialog class="lb" id="lb" aria-label="Foto ampliada">
+  <img id="lbImg" src="data:," alt="">
+  <p class="mono" id="lbCap"></p>
+  <button class="iconbtn lb-x" id="lbClose" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <button class="iconbtn lb-prev" id="lbPrev" type="button" aria-label="Foto anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+  <button class="iconbtn lb-next" id="lbNext" type="button" aria-label="Foto siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+</dialog>
 
 <script>
 /* =================================================================
    CONFIG  —  CAMBIA ESTOS DATOS POR LOS TUYOS
    ================================================================= */
 const CONFIG = {
-  nombre:   "Jose Angel Hernadez Amaya",              // tu nombre o el de tu negocio
-  ciudad:   "Lazaro Cardenas",              // zona donde trabajas
-  telefono: "527531812346",           // WhatsApp con lada país. México = 52. Ej: 5218112345678
+  marca:    "Trabajos independientes",              // nombre que se ve arriba (el de tus tarjetas)
+  nombre:   "José Ángel Hernández Amaya",           // tu nombre o el de tu negocio
+  ciudad:   "Lázaro Cárdenas",                      // zona donde trabajas
+  telefono: "527531812346",                         // WhatsApp con lada país. México = 52
   correo:   "joseangelhernandezamaya2@gmail.com"    // tu correo (opcional)
 };
 /* ================================================================= */
 
 (function () {
+  const $ = (s, c) => (c || document).querySelector(s);
+  const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+  const root = document.documentElement;
+  const header = $("header");
+  const reduceMQ = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  // "calma": sin animaciones (modo ahorro o el sistema pide menos movimiento)
+  const calm = () => document.body.classList.contains("eco") || !!(reduceMQ && reduceMQ.matches);
+
   // Rellena datos visibles
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  set("brandName", CONFIG.nombre); set("footName", CONFIG.nombre);
-  set("footArea", "Trabajos independientes · Zona de servicio: " + CONFIG.ciudad);
-  document.getElementById("year").textContent = new Date().getFullYear();
+  set("brandName", CONFIG.marca); set("footName", CONFIG.nombre);
+  set("heroArea", CONFIG.ciudad + ", Mich. · Visita sin costo");
+  set("footArea", "Zona de servicio: " + CONFIG.ciudad + ", Mich.");
+  set("year", new Date().getFullYear());
 
   const soloDigitos = CONFIG.telefono.replace(/\D/g, "");
+  const local = soloDigitos.slice(-10);                       // 7531812346 → 753 181 2346
+  const telVisible = local.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3");
   const waBase = "https://wa.me/" + soloDigitos;
-  document.getElementById("waLink").href = waBase + "?text=" + encodeURIComponent("Hola, vi tu página y quiero agendar una visita para cotizar un trabajo.");
-  document.getElementById("waText").textContent = "+" + soloDigitos;
-  document.getElementById("telLink").href = "tel:+" + soloDigitos;
-  document.getElementById("telText").textContent = "+" + soloDigitos;
-  document.getElementById("mailLink").href = "mailto:" + CONFIG.correo;
-  document.getElementById("mailText").textContent = CONFIG.correo;
+  const waHola = waBase + "?text=" + encodeURIComponent("Hola, vi tu página y quiero agendar una visita para cotizar un trabajo.");
+  $("#waLink").href = waHola; $("#fab").href = waHola;
+  set("waText", telVisible);
+  $("#telLink").href = "tel:+" + soloDigitos;
+  set("telText", telVisible);
+  $("#mailLink").href = "mailto:" + CONFIG.correo;
+  set("mailText", CONFIG.correo);
 
   // Almacenamiento seguro (no rompe si el navegador lo bloquea)
   const store = {
@@ -570,9 +1095,8 @@ const CONFIG = {
   };
 
   /* ---------- TEMA claro / oscuro ---------- */
-  const root = document.documentElement;
-  const themeBtn = document.getElementById("themeBtn");
-  const themeIcon = document.getElementById("themeIcon");
+  const themeBtn = $("#themeBtn");
+  const themeIcon = $("#themeIcon");
   const sunPath = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
   const moonPath = '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
   function applyTheme(t){
@@ -580,53 +1104,181 @@ const CONFIG = {
     themeIcon.innerHTML = t === "dark" ? sunPath : moonPath;
     themeBtn.setAttribute("aria-label", t === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
   }
-  const savedTheme = store.get("tema");
-  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  applyTheme(savedTheme || (prefersDark ? "dark" : "light"));
+  applyTheme(root.getAttribute("data-theme") === "dark" ? "dark" : "light");   // ya se eligió en el <head>
   themeBtn.addEventListener("click", () => {
     const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    applyTheme(next); store.set("tema", next);
+    const go = () => { applyTheme(next); store.set("tema", next); };
+    if (!document.startViewTransition || calm()) return go();
+    // El tema nuevo se "pinta" en círculo desde el botón
+    const r = themeBtn.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const R = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    root.classList.add("vt");
+    const vt = document.startViewTransition(go);
+    vt.ready.then(() => {
+      root.animate({ clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + R + "px at " + x + "px " + y + "px)"] },
+        { duration: 700, easing: "cubic-bezier(.7,0,.3,1)", pseudoElement: "::view-transition-new(root)" });
+    }).catch(() => {});
+    vt.finished.finally(() => root.classList.remove("vt"));
   });
 
   /* ---------- MODO AHORRO ---------- */
-  const ecoBtn = document.getElementById("ecoBtn");
+  const ecoBtn = $("#ecoBtn");
   function applyEco(on){
     document.body.classList.toggle("eco", on);
     ecoBtn.setAttribute("aria-pressed", on ? "true" : "false");
     ecoBtn.title = on ? "Modo ahorro activado" : "Activar modo ahorro de recursos";
   }
-  // Detección automática de equipos de gama baja / datos limitados
-  function equipoLimitado(){
-    try {
-      const con = navigator.connection || {};
-      if (con.saveData) return true;                               // "ahorro de datos" activo
-      if (con.effectiveType && /2g/.test(con.effectiveType)) return true;
-      if (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 2) return true;
-      if (typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 2) return true;
-    } catch(e){}
-    return false;
-  }
-  const savedEco = store.get("ahorro");           // "1" / "0" si el usuario ya eligió
-  let ecoInicial = savedEco !== null ? (savedEco === "1") : equipoLimitado();
-  applyEco(ecoInicial);
+  applyEco(!!(window.OHM && window.OHM.eco));       // detectado en el <head>
   ecoBtn.addEventListener("click", () => {
     const next = !document.body.classList.contains("eco");
     applyEco(next); store.set("ahorro", next ? "1" : "0");
+    if (next) finishHouse();
   });
 
-  /* ---------- Reveal de carga ---------- */
-  requestAnimationFrame(() => document.body.classList.add("loaded"));
+  /* ---------- INTRO + arranque del hero ---------- */
+  const intro = $("#intro");
+  let heroReady = false;
+  function startHero(){
+    if (heroReady) return;
+    heroReady = true;
+    root.classList.remove("intro-on");
+    document.body.classList.add("loaded");
+    maybePlayHouse();
+  }
+  if (intro && !root.classList.contains("no-intro")) {
+    const skip = () => {
+      if (heroReady || intro.classList.contains("skip")) return;
+      intro.classList.add("skip");
+      setTimeout(startHero, 120);
+    };
+    intro.addEventListener("click", skip);
+    window.addEventListener("keydown", skip, { once: true });
+    window.addEventListener("wheel", skip, { once: true, passive: true });
+    window.addEventListener("touchmove", skip, { once: true, passive: true });
+    setTimeout(startHero, 2450);                                   // cuando la cortina empieza a subir
+    intro.addEventListener("animationend", e => { if (e.target === intro) intro.remove(); });
+    setTimeout(() => intro.remove(), 5000);                        // por si acaso
+  } else {
+    if (intro) intro.remove();
+    requestAnimationFrame(startHero);
+  }
+
+  /* ---------- CASA ANIMADA ---------- */
+  const house = $("#house"), hcard = $("#houseCard");
+  const checks = $$(".check");
+  const STEPS = [  // [clase, empieza (ms), palomita (ms), texto]
+    ["s1", 1100, 1850, "Paso 1/5 · Impermeabilizando la azotea…"],
+    ["s2", 1950, 2600, "Paso 2/5 · Resanando grietas…"],
+    ["s3", 2700, 4150, "Paso 3/5 · Pintando muros, de arriba abajo…"],
+    ["s4", 4250, 4900, "Paso 4/5 · Instalando mosquitero a medida…"],
+    ["s5", 5000, 5850, "Paso 5/5 · Pintando la herrería…"]
+  ];
+  let timers = [], houseVisible = false, housePlayed = false;
+  const status = (txt, state) => { set("hStatus", txt); set("hState", state || "Obra en curso"); };
+  function resetHouse(){
+    timers.forEach(clearTimeout); timers = [];
+    house.classList.add("reset");
+    house.classList.remove("draw", "s1", "s2", "s3", "s4", "s5", "done");
+    checks.forEach(c => c.classList.remove("on"));
+    hcard.classList.remove("finished");
+    void house.getBoundingClientRect();
+    house.classList.remove("reset");
+  }
+  function finishHouse(){
+    timers.forEach(clearTimeout); timers = [];
+    house.classList.add("draw", "s1", "s2", "s3", "s4", "s5", "done");
+    checks.forEach(c => c.classList.add("on"));
+    hcard.classList.add("finished");
+    status("Casa lista. Así puede quedar la tuya.", "Terminada");
+  }
+  function playHouse(){
+    resetHouse();
+    if (calm()) return finishHouse();
+    status("Revisando el lugar…");
+    timers.push(setTimeout(() => house.classList.add("draw"), 40));
+    STEPS.forEach(([cls, at, end, txt], i) => {
+      timers.push(setTimeout(() => { house.classList.add(cls); status(txt); }, at));
+      timers.push(setTimeout(() => checks[i].classList.add("on"), end));
+    });
+    timers.push(setTimeout(finishHouse, 6000));
+  }
+  function maybePlayHouse(){
+    if (!heroReady || !houseVisible || housePlayed) return;
+    housePlayed = true;
+    if (calm()) finishHouse(); else timers.push(setTimeout(playHouse, 350));
+  }
+  $("#replayBtn").addEventListener("click", playHouse);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((es, obs) => {
+      if (es.some(e => e.isIntersecting)) { houseVisible = true; obs.disconnect(); maybePlayHouse(); }
+    }, { threshold: 0.35 }).observe(house);
+  } else { houseVisible = true; }
+
+  // Inclinación suave de la tarjeta con el mouse (solo escritorio)
+  if (window.matchMedia && matchMedia("(hover:hover) and (pointer:fine)").matches) {
+    const wrap = $(".house-wrap");
+    wrap.addEventListener("pointermove", e => {
+      if (calm()) return;
+      const r = wrap.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
+      hcard.style.transform = "perspective(900px) rotateY(" + (px * 5) + "deg) rotateX(" + (-py * 5) + "deg)";
+    });
+    wrap.addEventListener("pointerleave", () => { hcard.style.transform = ""; });
+  }
+
+  /* ---------- Comparadores antes / después ---------- */
+  function setupBA(ba){
+    const range = $(".ba-range", ba);
+    let drag = false, startX = 0, moved = false, touched = false;
+    const put = v => { v = Math.max(0, Math.min(100, v)); ba.style.setProperty("--pos", v + "%"); range.value = Math.round(v); };
+    const fromX = x => { const r = ba.getBoundingClientRect(); put((x - r.left) / r.width * 100); };
+    ba.addEventListener("pointerdown", e => {
+      drag = true; touched = true; moved = false; startX = e.clientX;
+      if (e.pointerType !== "touch") { fromX(e.clientX); ba.setPointerCapture(e.pointerId); }
+      ba.classList.add("dragging");
+    });
+    ba.addEventListener("pointermove", e => {
+      if (!drag) return;
+      if (e.pointerType === "touch" && !moved && Math.abs(e.clientX - startX) < 6) return;  // deja hacer scroll vertical
+      moved = true; fromX(e.clientX);
+    });
+    const end = () => { drag = false; ba.classList.remove("dragging"); };
+    ba.addEventListener("pointerup", end); ba.addEventListener("pointercancel", end);
+    range.addEventListener("input", () => { touched = true; put(+range.value); });
+    // Pista: al aparecer, la barra se mueve sola una vez
+    ba.hint = () => {
+      if (calm() || touched) return;
+      const pts = [50, 82, 18, 50], seg = 650; let t0 = null;
+      const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const step = t => {
+        if (touched) return;
+        if (t0 === null) t0 = t;
+        const k = (t - t0) / seg, i = Math.floor(k);
+        if (i >= pts.length - 1) return put(50);
+        put(pts[i] + (pts[i + 1] - pts[i]) * ease(k - i));
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+  }
+  $$("[data-ba]").forEach(setupBA);
 
   /* ---------- Scroll reveal ---------- */
-  const items = document.querySelectorAll(".obs");
+  const items = $$(".obs, [data-paint]");
+  items.forEach(el => {
+    const sib = Array.from(el.parentElement.children).filter(c => c.classList.contains("obs"));
+    if (sib.length > 1) el.style.setProperty("--d", Math.min(sib.indexOf(el), 6));
+  });
+  $$(".gallery .shot").forEach((s, i) => s.style.setProperty("--d", i));
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((e, i) => {
-        if (e.isIntersecting){
-          e.target.style.transitionDelay = Math.min(i * 60, 180) + "ms";
-          e.target.classList.add("in");
-          io.unobserve(e.target);
-        }
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        io.unobserve(e.target);
+        const ba = $("[data-ba]", e.target);
+        if (ba && ba.hint) setTimeout(ba.hint, 700);
       });
     }, { threshold: 0.14, rootMargin: "0px 0px -8% 0px" });
     items.forEach(el => io.observe(el));
@@ -634,17 +1286,81 @@ const CONFIG = {
     items.forEach(el => el.classList.add("in"));
   }
 
-  /* ---------- Menú móvil (scroll suave a secciones) ---------- */
-  document.getElementById("menuBtn").addEventListener("click", () => {
-    document.getElementById("servicios").scrollIntoView({ behavior: "smooth" });
+  /* ---------- Scroll: header, barra de avance, proceso, botón flotante ---------- */
+  const steps = $("#steps"), stepEls = $$(".step"), contact = $("#contacto"), fab = $("#fab");
+  let lastY = window.scrollY, ticking = false, menuOpen = false;
+  function onScroll(){
+    ticking = false;
+    const y = window.scrollY, vh = window.innerHeight;
+    const max = document.documentElement.scrollHeight - vh;
+    header.style.setProperty("--sp", max > 0 ? (y / max).toFixed(4) : 0);
+    if (Math.abs(y - lastY) > 6) { header.classList.toggle("hide", y > lastY && y > 320 && !menuOpen); lastY = y; }
+    // la línea del proceso se pinta conforme bajas
+    const r = steps.getBoundingClientRect();
+    const p = calm() ? 1 : Math.max(0, Math.min(1, (vh * .85 - r.top) / (vh * .5 + r.height * .5)));
+    steps.style.setProperty("--p", p.toFixed(3));
+    stepEls.forEach((s, i) => s.classList.toggle("on", p >= i / 3 - .02));
+    fab.classList.toggle("show", y > vh * .9 && contact.getBoundingClientRect().top > vh * .6);
+  }
+  window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- Menú móvil ---------- */
+  const menuBtn = $("#menuBtn"), mnav = $("#mnav");
+  function setMenu(open){
+    menuOpen = open;
+    mnav.classList.toggle("open", open);
+    root.classList.toggle("menu-on", open);
+    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    menuBtn.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+    header.classList.remove("hide");
+  }
+  menuBtn.addEventListener("click", () => setMenu(!menuOpen));
+  $$("a", mnav).forEach(a => a.addEventListener("click", () => setMenu(false)));
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && menuOpen) { setMenu(false); menuBtn.focus(); } });
+  window.matchMedia && matchMedia("(min-width:641px)").addEventListener("change", e => { if (e.matches) setMenu(false); });
+
+  /* ---------- Visor de fotos ---------- */
+  const lb = $("#lb"), lbImg = $("#lbImg"), lbCap = $("#lbCap"), shots = $$(".shot-btn");
+  let cur = 0;
+  function show(i){
+    cur = (i + shots.length) % shots.length;
+    const img = $("img", shots[cur]);
+    lbImg.src = img.currentSrc || img.src; lbImg.alt = img.alt;
+    lbCap.textContent = shots[cur].dataset.cap || "";
+  }
+  shots.forEach((b, i) => b.addEventListener("click", () => {
+    show(i);
+    if (typeof lb.showModal === "function") lb.showModal(); else window.open(lbImg.src, "_blank");
+  }));
+  $("#lbClose").addEventListener("click", () => lb.close());
+  $("#lbPrev").addEventListener("click", () => show(cur - 1));
+  $("#lbNext").addEventListener("click", () => show(cur + 1));
+  lb.addEventListener("click", e => { if (e.target === lb) lb.close(); });
+  lb.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") show(cur - 1);
+    if (e.key === "ArrowRight") show(cur + 1);
+  });
+  let sx = null;   // deslizar en celular
+  lbImg.addEventListener("pointerdown", e => { sx = e.clientX; });
+  lbImg.addEventListener("pointerup", e => {
+    if (sx === null) return;
+    const dx = e.clientX - sx; sx = null;
+    if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1));
   });
 
   /* ---------- Formulario → WhatsApp ---------- */
-  document.getElementById("contactForm").addEventListener("submit", (ev) => {
+  $("#contactForm").addEventListener("submit", (ev) => {
     ev.preventDefault();
     const g = id => (document.getElementById(id).value || "").trim();
     const name = g("f-name");
-    if (!name){ document.getElementById("f-name").focus(); return; }
+    const nameField = $("#f-name").parentElement;
+    if (!name){
+      nameField.classList.remove("err"); void nameField.offsetWidth; nameField.classList.add("err");
+      $("#f-name").focus(); return;
+    }
+    nameField.classList.remove("err");
     const msg =
       "Hola, soy " + name + ". Quiero agendar una visita para cotizar.\n" +
       "Trabajo: " + g("f-type") + "\n" +
@@ -653,6 +1369,9 @@ const CONFIG = {
       (g("f-phone") ? "Mi teléfono: " + g("f-phone") + "\n" : "") +
       (g("f-msg") ? "Detalle: " + g("f-msg") : "");
     window.open(waBase + "?text=" + encodeURIComponent(msg), "_blank");
+    const lbl = $("#sendBtn span");
+    lbl.textContent = "Abriendo WhatsApp…";
+    setTimeout(() => { lbl.textContent = "Agendar visita por WhatsApp"; }, 2500);
   });
 })();
 </script>

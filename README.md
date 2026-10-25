@@ -1,4 +1,4 @@
-# Ohmdail
+# Trabajos independientes (ohmdail.com)
 
 Sitio web de un solo archivo (`index.html`, HTML+CSS+JS en línea, sin build)
 para José Ángel Hernández Amaya — servicios de mantenimiento del hogar en
